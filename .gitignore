@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Local tool state
+.claude/*
+!.claude/launch.json
+
+# Node, if a build step is ever added
+node_modules/
+dist/
+
+# Logs and scratch
+*.log
+scratch/
