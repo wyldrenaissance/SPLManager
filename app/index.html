@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Orange County</title>
 <style>
 :root{
@@ -26,7 +26,7 @@ body{
   background:var(--wall); color:var(--ink);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,sans-serif;
   font-size:15px; line-height:1.4; -webkit-font-smoothing:antialiased;
-  display:flex; flex-direction:column; height:100vh; overflow:hidden; font-variant-numeric:tabular-nums;
+  display:flex; flex-direction:column; height:100vh; height:100dvh; overflow:hidden; font-variant-numeric:tabular-nums;
 }
 button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer;text-align:left}
 button:disabled{opacity:.4;cursor:default}
@@ -352,7 +352,7 @@ nav{height:84px;flex:none;display:flex;justify-content:center;align-items:center
   .me h1{font-size:17px}
   .me-actions .act:not(.open){display:none}
   main{padding:4px var(--pad) 28px}
-  nav{height:72px;padding:0 10px 10px}
+  nav{height:auto;padding:4px 10px calc(10px + env(safe-area-inset-bottom))}
   .trough{width:100%;gap:0;padding:4px}
   .tab{flex:1;width:auto;min-width:0;font-size:9.5px;padding:7px 0 5px;gap:3px;border-radius:16px}
   .tab svg{width:20px;height:20px}
