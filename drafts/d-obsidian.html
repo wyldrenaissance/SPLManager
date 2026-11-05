@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPL Manager · D · Obsidian</title>
+<style>
+:root{
+  --bg:#090a09; --panel:#101210; --panel-2:#161816; --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.12);
+  --ink:#f1f2f0; --ink-2:#8d918d; --ink-3:#575b57;
+  --accent:#3ddc84; --warn:#e2a93a; --off:#e25a4b;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  font-size:14px; line-height:1.4; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden; font-variant-numeric:tabular-nums;
+}
+header{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex:none;border-bottom:1px solid var(--line)}
+.wordmark{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.wordmark i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:12px;vertical-align:1px;box-shadow:0 0 10px var(--accent)}
+.sys{font-size:12px;color:var(--ink-2);letter-spacing:.08em;text-transform:uppercase;display:flex;gap:28px}
+.sys b{color:var(--ink);font-weight:600}
+.sys b.w{color:var(--warn)} .sys b.o{color:var(--off)}
+.hdr-right{display:flex;align-items:center;gap:14px;color:var(--ink-2);font-size:12px}
+.avatar{width:26px;height:26px;border-radius:6px;border:1px solid var(--line-2);display:grid;place-items:center;font-weight:600;font-size:11px;color:var(--ink)}
+
+main{flex:1;overflow:auto;padding:20px 24px 24px;display:grid;grid-template-columns:1.6fr 1fr;grid-template-rows:auto 1fr;gap:16px}
+.label{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+
+.spacesbar{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.sp{border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;background:var(--panel)}
+.sp h2{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.sp .m{color:var(--ink-3);font-size:12px;margin-top:2px}
+.sp .nums{display:flex;gap:26px;text-align:right}
+.sp .nums div{font-size:12px;color:var(--ink-2)}
+.sp .nums b{display:block;font-size:20px;color:var(--ink);font-weight:500;letter-spacing:-.02em}
+.sp .nums b.a{color:var(--accent)} .sp .nums b.w{color:var(--warn)} .sp .nums b.o{color:var(--off)}
+
+.panel{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);display:flex;flex-direction:column;min-height:0}
+.panel-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line)}
+.panel-h h3{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2)}
+.panel-h span{font-size:12px;color:var(--ink-3)}
+
+.row{display:grid;grid-template-columns:4px 1.3fr 1fr 1.4fr 90px;align-items:center;gap:16px;padding:0 16px 0 0;height:58px;border-bottom:1px solid var(--line);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--panel-2)}
+.rail{height:100%;background:var(--accent)}
+.rail.warn{background:var(--warn)} .rail.off{background:var(--off)} .rail.idle{background:var(--ink-3)}
+.row .name{font-size:15px;font-weight:500}
+.row .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px;letter-spacing:.04em}
+.row .st{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2);display:flex;align-items:center;gap:10px}
+.row .st.warn{color:var(--warn)} .row .st.off{color:var(--off)}
+.row .np{font-size:13px;color:var(--ink-2)}
+.row .np i{font-style:normal;color:var(--ink-3)}
+.row.is-off .name{color:var(--ink-3)}
+
+.meter{display:flex;gap:2px;align-items:center;justify-content:flex-end}
+.meter i{width:5px;height:14px;background:var(--line-2);border-radius:1px}
+.meter i.on{background:var(--accent)}
+.meter i.hot{background:var(--warn)}
+.meter em{font-style:normal;font-size:11px;color:var(--ink-3);margin-left:8px;width:44px;text-align:right}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:11px;color:var(--accent)}
+.eq i{width:2.5px;background:currentColor;animation:eq 1.1s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.18s}.eq i:nth-child(3){animation-delay:.36s}
+@keyframes eq{0%,100%{height:3px}50%{height:11px}}
+
+.crow{display:grid;grid-template-columns:4px 1fr 110px;align-items:center;gap:14px;height:64px;border-bottom:1px solid var(--line);padding-right:16px;cursor:pointer}
+.crow:last-child{border-bottom:0}
+.crow:hover{background:var(--panel-2)}
+.crow .name{font-size:15px;font-weight:500}
+.crow .sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.crow .sub.warn{color:var(--warn)}
+.load{text-align:right}
+.load b{font-size:20px;font-weight:400;letter-spacing:-.02em}
+.load b.hot{color:var(--warn)}
+.load .t{height:3px;background:var(--line-2);margin-top:6px;border-radius:2px;overflow:hidden}
+.load .t i{display:block;height:100%;background:var(--ink-2)}
+.load .t i.hot{background:var(--warn)}
+.netline{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:22px;font-size:12px;color:var(--ink-3);margin-top:auto}
+.netline b{color:var(--ink-2);font-weight:500}
+
+nav{height:66px;flex:none;border-top:1px solid var(--line);display:flex;justify-content:center;align-items:stretch}
+.tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:112px;color:var(--ink-3);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;border:0;background:none;font-family:inherit;transition:color .18s}
+.tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.tab:hover{color:var(--ink-2)}
+.tab.active{color:var(--ink)}
+.tab.active svg{stroke:var(--accent)}
+.tab.active::after{content:"";position:absolute;bottom:0;left:50%;width:28px;margin-left:-14px;height:2px;background:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark"><i></i>SPL Manager</div>
+  <div class="sys"><span>System <b>Nominal</b></span><span>Alerts <b class="w">1</b></span><span>Offline <b class="o">1</b></span><span>Rendering <b>4 / 6</b></span></div>
+  <div class="hdr-right"><span>14:22:07</span><div class="avatar">W</div></div>
+</header>
+
+<main>
+  <section class="spacesbar">
+    <div class="sp"><div><h2>Atrium</h2><div class="m">3 zones · 3 computers · RNDR-01 02 03</div></div>
+      <div class="nums"><div>Rendering<b class="a">3</b></div><div>Degraded<b class="w">1</b></div><div>Offline<b>0</b></div></div></div>
+    <div class="sp"><div><h2>Terrace</h2><div class="m">3 zones · 1 computer · RNDR-04</div></div>
+      <div class="nums"><div>Rendering<b class="a">1</b></div><div>Degraded<b>0</b></div><div>Offline<b class="o">1</b></div></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h3>Zones</h3><span>6 total</span></div>
+    <div class="row"><div class="rail"></div><div><div class="name">Lobby</div><div class="sub">ATRIUM · RNDR-01</div></div><div class="st">Online <span class="eq"><i></i><i></i><i></i></span></div><div class="np">Morning Drift <i>· cloud</i></div><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><em>−12</em></div></div>
+    <div class="row"><div class="rail"></div><div><div class="name">Mezzanine</div><div class="sub">ATRIUM · RNDR-01, 02</div></div><div class="st">Online <span class="eq"><i></i><i></i><i></i></span></div><div class="np">Ambient Set 04 <i>· local</i></div><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><em>−18</em></div></div>
+    <div class="row"><div class="rail warn"></div><div><div class="name">Gallery</div><div class="sub">ATRIUM · RNDR-02, 03</div></div><div class="st warn">Degraded <span class="eq"><i></i><i></i><i></i></span></div><div class="np">Field Recordings <i>· local</i></div><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="hot"></i><i></i><i></i><em>−9</em></div></div>
+    <div class="row"><div class="rail"></div><div><div class="name">Terrace Deck</div><div class="sub">TERRACE · RNDR-04</div></div><div class="st">Online <span class="eq"><i></i><i></i><i></i></span></div><div class="np">Evening Tide <i>· cloud</i></div><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i><i></i><em>−15</em></div></div>
+    <div class="row"><div class="rail idle"></div><div><div class="name">Pool Bar</div><div class="sub">TERRACE · RNDR-04</div></div><div class="st">Idle</div><div class="np"><i>Nothing playing</i></div><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><em>mute</em></div></div>
+    <div class="row is-off"><div class="rail off"></div><div><div class="name">Cabanas</div><div class="sub">TERRACE · RNDR-04 · since 13:48</div></div><div class="st off">Offline</div><div class="np"><i>—</i></div><div class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><em>—</em></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-h"><h3>Computers</h3><span>4 total</span></div>
+    <div class="crow"><div class="rail"></div><div><div class="name">RNDR-01</div><div class="sub">Atrium · Lobby, Mezzanine</div></div><div class="load"><b>34</b><span style="color:var(--ink-3);font-size:11px">%</span><div class="t"><i style="width:34%"></i></div></div></div>
+    <div class="crow"><div class="rail"></div><div><div class="name">RNDR-02</div><div class="sub">Atrium · Mezzanine, Gallery</div></div><div class="load"><b>41</b><span style="color:var(--ink-3);font-size:11px">%</span><div class="t"><i style="width:41%"></i></div></div></div>
+    <div class="crow"><div class="rail warn"></div><div><div class="name">RNDR-03</div><div class="sub warn">Audio interface dropouts · 3 in 60 s</div></div><div class="load"><b class="hot">88</b><span style="color:var(--ink-3);font-size:11px">%</span><div class="t"><i class="hot" style="width:88%"></i></div></div></div>
+    <div class="crow"><div class="rail"></div><div><div class="name">RNDR-04</div><div class="sub">Terrace · Deck, Pool Bar, Cabanas</div></div><div class="load"><b>22</b><span style="color:var(--ink-3);font-size:11px">%</span><div class="t"><i style="width:22%"></i></div></div></div>
+    <div class="netline"><span>MCAST <b>239.1.2.3</b></span><span>REST <b>7378</b></span><span>OSC <b>9002</b></span></div>
+  </section>
+</main>
+
+<nav>
+  <button class="tab active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Dashboard</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/></svg>Zones</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Computers</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-5.5 5.5M12 12l5.5 5.5"/></svg>Network</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="14" r="3.2"/><circle cx="12" cy="7.5" r="1.1"/></svg>Speakermaps</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--bg)"/><circle cx="15" cy="12" r="2.2" fill="var(--bg)"/><circle cx="8" cy="17" r="2.2" fill="var(--bg)"/></svg>Settings</button>
+</nav>
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPL Manager · C2 · Alcove Bare</title>
+<style>
+:root{
+  --wall:#16261e; --wall-hi:#1c2e25; --void:#0b1511;
+  --ink:#eaf0eb; --ink-2:#a1b5a8; --ink-3:#5f7367; --seg:rgba(164,184,171,.13);
+  --ok:#7ad99b; --warn:#e8bb62; --off:#dc7a66; --accent:#94e3ad;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--wall); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  font-size:15px; line-height:1.4; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden; font-variant-numeric:tabular-nums;
+}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 56px;flex:none}
+.wordmark{font-size:14px;font-weight:500;color:var(--ink-3)}
+.wordmark b{color:var(--ink-2);font-weight:600}
+.time{color:var(--ink-3);font-size:14px}
+
+main{flex:1;overflow:auto;padding:16px 56px 40px}
+
+.hero{padding:26px 0 40px}
+.hero h1{font-size:34px;font-weight:400;letter-spacing:-.02em;line-height:1.15}
+.hero p{color:var(--ink-2);margin-top:10px;font-size:16px;max-width:640px}
+.hero p .w{color:var(--warn)} .hero p .o{color:var(--off)}
+
+.space{display:grid;grid-template-columns:220px 1fr;gap:40px;padding:34px 0}
+.space + .space{border-top:1px solid rgba(255,255,255,.045)}
+.space-side h2{font-size:24px;font-weight:500;letter-spacing:-.01em}
+.space-side .cpus{margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.cpu{display:flex;align-items:baseline;font-size:14px;color:var(--ink-2)}
+.cpu b{font-weight:500;color:var(--ink-2)}
+.cpu .pct{color:var(--ink-3);margin-left:auto}
+.cpu.warn b{color:var(--warn)} .cpu.warn .pct{color:var(--warn)}
+.cpu .note{display:block;font-size:12px;color:var(--ink-3);font-weight:400}
+
+.windows{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.win{
+  position:relative; background:var(--void);
+  border-radius:40px 40px 24px 24px; padding:28px 24px 24px 30px; min-height:176px;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;
+}
+.win .rail{position:absolute;left:13px;top:34px;bottom:30px;width:3px;border-radius:2px;background:var(--ok)}
+.win .rail.warn{background:var(--warn)}
+.win .rail.idle{background:var(--ink-3);opacity:.5}
+.win .rail.off{background:var(--off);opacity:.6}
+.win .name{font-size:20px;font-weight:600}
+.win .now{color:var(--ink-3);font-size:13.5px;margin-top:6px}
+.win .foot{display:flex;align-items:flex-end;justify-content:space-between;margin-top:18px;min-height:16px}
+.win .st{font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.win .st.warn{color:var(--warn)} .win .st.off{color:var(--off)}
+.win.is-off{opacity:.5}
+.meter{display:flex;gap:2px;align-items:center}
+.meter i{width:5px;height:14px;background:var(--seg);border-radius:1px}
+.meter i.on{background:var(--accent)}
+.meter i.hot{background:var(--warn)}
+.meter i.tip{animation:tip 1.2s ease-in-out infinite}
+@keyframes tip{0%,100%{opacity:1}50%{opacity:.25}}
+
+.events{padding:30px 0 0;border-top:1px solid rgba(255,255,255,.045);display:grid;grid-template-columns:220px 1fr;gap:40px}
+.events h2{font-size:14px;font-weight:500;color:var(--ink-3);padding-top:4px}
+.events ul{list-style:none}
+.events li{display:flex;gap:20px;padding:7px 0;font-size:14px;color:var(--ink-3)}
+.events time{width:44px;flex:none}
+.events b{color:var(--ink-2);font-weight:500}
+.events .w{color:var(--warn)} .events .o{color:var(--off)}
+
+nav{height:84px;flex:none;display:flex;justify-content:center;align-items:center;padding:0 56px 14px}
+.trough{display:flex;gap:2px;padding:5px;border-radius:26px;background:var(--void);box-shadow:inset 0 2px 8px rgba(0,0,0,.55)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;width:100px;padding:9px 0 7px;border-radius:21px;color:var(--ink-3);font-size:11px;cursor:pointer;border:0;background:none;font-family:inherit;transition:all .18s}
+.tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.tab:hover{color:var(--ink-2)}
+.tab.active{background:var(--wall-hi);color:var(--ink)}
+.tab.active svg{stroke:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark"><b>SPL</b> Manager</div>
+  <div class="time">14:22</div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Everything is playing.</h1>
+    <p><span class="w">RNDR-03</span> is reporting audio interface dropouts in Gallery. <span class="o">Cabanas</span> has been offline since 13:48.</p>
+  </section>
+
+  <section class="space">
+    <div class="space-side">
+      <h2>Atrium</h2>
+      <div class="cpus">
+        <div class="cpu"><b>RNDR-01</b><span class="pct">34%</span></div>
+        <div class="cpu"><b>RNDR-02</b><span class="pct">41%</span></div>
+        <div class="cpu warn"><b>RNDR-03<span class="note">Interface dropouts</span></b><span class="pct">88%</span></div>
+      </div>
+    </div>
+    <div class="windows">
+      <div class="win"><span class="rail"></span>
+        <div><div class="name">Lobby</div><div class="now">Morning Drift · Cloud</div></div>
+        <div class="foot"><span></span><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on tip"></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <div class="win"><span class="rail"></span>
+        <div><div class="name">Mezzanine</div><div class="now">Ambient Set 04 · Local</div></div>
+        <div class="foot"><span></span><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on tip"></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <div class="win"><span class="rail warn"></span>
+        <div><div class="name">Gallery</div><div class="now">Field Recordings · Local</div></div>
+        <div class="foot"><span class="st warn">Degraded</span><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="hot tip"></i><i></i><i></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="space">
+    <div class="space-side">
+      <h2>Terrace</h2>
+      <div class="cpus">
+        <div class="cpu"><b>RNDR-04</b><span class="pct">22%</span></div>
+      </div>
+    </div>
+    <div class="windows">
+      <div class="win"><span class="rail"></span>
+        <div><div class="name">Terrace Deck</div><div class="now">Evening Tide · Cloud</div></div>
+        <div class="foot"><span></span><span class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on tip"></i><i></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <div class="win"><span class="rail idle"></span>
+        <div><div class="name">Pool Bar</div><div class="now">Nothing playing</div></div>
+        <div class="foot"><span class="st">Idle</span><span class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+      <div class="win is-off"><span class="rail off"></span>
+        <div><div class="name">Cabanas</div><div class="now">Last seen 13:48</div></div>
+        <div class="foot"><span class="st off">Offline</span><span class="meter"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="events">
+    <h2>Recent</h2>
+    <ul>
+      <li><time>14:19</time><span><b class="w">RNDR-03</b> interface dropout, 3 in the last 60 s</span></li>
+      <li><time>13:48</time><span><b class="o">Cabanas</b> lost heartbeat from RNDR-04</span></li>
+      <li><time>13:02</time><span><b>Lobby</b> switched to Morning Drift</span></li>
+    </ul>
+  </section>
+</main>
+
+<nav>
+  <div class="trough">
+    <button class="tab active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/></svg>Dashboard</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/></svg>Zones</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Computers</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-5.5 5.5M12 12l5.5 5.5"/></svg>Network</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="14" r="3.2"/><circle cx="12" cy="7.5" r="1.1"/></svg>Speakermaps</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</button>
+    <button class="tab"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--void)"/><circle cx="15" cy="12" r="2.2" fill="var(--void)"/><circle cx="8" cy="17" r="2.2" fill="var(--void)"/></svg>Settings</button>
+  </div>
+</nav>
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+</script>
+</body>
+</html>

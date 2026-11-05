@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPL Manager · A · Canyon</title>
+<style>
+:root{
+  --bg:#0a1511; --wall:#0e1a15; --panel:#152619; --panel-hi:#1b3127; --panel-lo:#0f1d17;
+  --ink:#e6eee9; --ink-2:#9cb2a6; --ink-3:#5c7367;
+  --ok:#72d496; --warn:#e6b85f; --off:#d97361; --accent:#8fe0a9;
+  --r:30px; --r-sm:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  font-size:15px; line-height:1.35; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  font-variant-numeric:tabular-nums;
+}
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;flex:none}
+.wordmark{font-size:15px;font-weight:600;letter-spacing:.01em;color:var(--ink-2)}
+.wordmark b{color:var(--ink);font-weight:600}
+.hdr-right{display:flex;align-items:center;gap:22px;color:var(--ink-2);font-size:14px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--panel-hi);display:grid;place-items:center;font-weight:600;color:var(--ink);font-size:13px}
+
+main{flex:1;overflow:auto;padding:6px 36px 32px}
+
+/* overview */
+.overview{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;padding:18px 8px 30px}
+.stats{display:flex;gap:56px}
+.stat .n{font-size:44px;font-weight:300;letter-spacing:-.02em;line-height:1}
+.stat .l{font-size:13px;color:var(--ink-3);margin-top:8px;text-transform:uppercase;letter-spacing:.08em}
+.alerts{display:flex;flex-direction:column;gap:8px;min-width:300px}
+.alert{display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:999px;background:var(--panel);font-size:14px;color:var(--ink-2)}
+.alert b{color:var(--ink);font-weight:500}
+.alert .dot{flex:none}
+
+/* status */
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 18%,transparent)}
+.dot.warn{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 18%,transparent)}
+.dot.off{background:var(--off);box-shadow:0 0 0 3px color-mix(in srgb,var(--off) 18%,transparent)}
+.dot.idle{background:var(--ink-3);box-shadow:none}
+.eq{display:inline-flex;gap:2px;align-items:flex-end;height:12px;color:var(--accent)}
+.eq i{width:3px;background:currentColor;border-radius:1px;animation:eq 1.1s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.18s}.eq i:nth-child(3){animation-delay:.36s}
+@keyframes eq{0%,100%{height:3px}50%{height:12px}}
+
+/* spaces */
+.spaces{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:24px}
+.space{
+  background:linear-gradient(180deg,var(--panel-hi) 0%,var(--panel) 18%,var(--panel) 100%);
+  border-radius:var(--r); padding:28px 28px 24px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045), 0 30px 50px -40px rgba(0,0,0,.9);
+}
+.space-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px}
+.space-h h2{font-size:24px;font-weight:600;letter-spacing:-.01em}
+.space-h .meta{color:var(--ink-3);font-size:13px;margin-left:14px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2);padding:6px 12px;border-radius:999px;background:var(--panel-lo)}
+.zones{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.zone{
+  background:var(--panel-lo); border-radius:var(--r-sm); padding:18px 18px 16px; min-height:128px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02);
+  transition:background .2s;
+}
+.zone:hover{background:#13241c;cursor:pointer}
+.zone .name{font-size:17px;font-weight:600;margin-bottom:6px}
+.zone .now{color:var(--ink-2);font-size:13px}
+.zone .now.off{color:var(--ink-3)}
+.zone .foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-size:12px;color:var(--ink-3)}
+.zone .st{display:flex;align-items:center;gap:8px}
+.zone.is-off{opacity:.6}
+.computers{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.cpu{display:inline-flex;align-items:center;gap:10px;padding:9px 14px;border-radius:999px;background:var(--panel-lo);font-size:13px;color:var(--ink-2)}
+.cpu b{color:var(--ink);font-weight:500}
+.cpu .pct{color:var(--ink-3)}
+.cpu.warn .pct{color:var(--warn)}
+
+/* tabs */
+nav{height:80px;flex:none;background:var(--wall);display:flex;justify-content:center;align-items:center;gap:6px;
+  box-shadow:0 -1px 0 rgba(255,255,255,.03)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;width:104px;padding:10px 0 8px;border-radius:18px;color:var(--ink-3);font-size:11.5px;letter-spacing:.02em;cursor:pointer;border:0;background:none;font-family:inherit;transition:all .18s}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab:hover{color:var(--ink-2)}
+.tab.active{background:var(--panel-hi);color:var(--ink)}
+.tab.active svg{stroke:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark"><b>SPL</b> Manager</div>
+  <div class="hdr-right"><span>Tue 4 Nov · 14:22</span><div class="avatar">W</div></div>
+</header>
+
+<main>
+  <section class="overview">
+    <div class="stats">
+      <div class="stat"><div class="n">2</div><div class="l">Spaces</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">Zones</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">Computers</div></div>
+      <div class="stat"><div class="n" style="color:var(--accent)">4</div><div class="l">Rendering</div></div>
+    </div>
+    <div class="alerts">
+      <div class="alert"><span class="dot warn"></span><b>RNDR-03</b> Audio interface dropouts</div>
+      <div class="alert"><span class="dot off"></span><b>Cabanas</b> Offline since 13:48</div>
+    </div>
+  </section>
+
+  <section class="spaces">
+    <article class="space">
+      <div class="space-h">
+        <div><h2 style="display:inline">Atrium</h2><span class="meta">3 zones · 3 computers</span></div>
+        <span class="pill"><span class="dot warn"></span>1 degraded</span>
+      </div>
+      <div class="zones">
+        <div class="zone">
+          <div><div class="name">Lobby</div><div class="now">Morning Drift · Cloud</div></div>
+          <div class="foot"><span class="st"><span class="dot"></span>Online</span><span class="eq"><i></i><i></i><i></i></span></div>
+        </div>
+        <div class="zone">
+          <div><div class="name">Mezzanine</div><div class="now">Ambient Set 04 · Local</div></div>
+          <div class="foot"><span class="st"><span class="dot"></span>Online</span><span class="eq"><i></i><i></i><i></i></span></div>
+        </div>
+        <div class="zone">
+          <div><div class="name">Gallery</div><div class="now">Field Recordings · Local</div></div>
+          <div class="foot"><span class="st"><span class="dot warn"></span>Degraded</span><span class="eq"><i></i><i></i><i></i></span></div>
+        </div>
+      </div>
+      <div class="computers">
+        <span class="cpu"><span class="dot"></span><b>RNDR-01</b><span class="pct">34%</span></span>
+        <span class="cpu"><span class="dot"></span><b>RNDR-02</b><span class="pct">41%</span></span>
+        <span class="cpu warn"><span class="dot warn"></span><b>RNDR-03</b><span class="pct">88%</span></span>
+      </div>
+    </article>
+
+    <article class="space">
+      <div class="space-h">
+        <div><h2 style="display:inline">Terrace</h2><span class="meta">3 zones · 1 computer</span></div>
+        <span class="pill"><span class="dot off"></span>1 offline</span>
+      </div>
+      <div class="zones">
+        <div class="zone">
+          <div><div class="name">Terrace Deck</div><div class="now">Evening Tide · Cloud</div></div>
+          <div class="foot"><span class="st"><span class="dot"></span>Online</span><span class="eq"><i></i><i></i><i></i></span></div>
+        </div>
+        <div class="zone">
+          <div><div class="name">Pool Bar</div><div class="now off">Nothing playing</div></div>
+          <div class="foot"><span class="st"><span class="dot"></span>Online</span><span class="st" style="color:var(--ink-3)">Idle</span></div>
+        </div>
+        <div class="zone is-off">
+          <div><div class="name">Cabanas</div><div class="now off">—</div></div>
+          <div class="foot"><span class="st"><span class="dot off"></span>Offline</span><span></span></div>
+        </div>
+      </div>
+      <div class="computers">
+        <span class="cpu"><span class="dot"></span><b>RNDR-04</b><span class="pct">22%</span></span>
+      </div>
+    </article>
+  </section>
+</main>
+
+<nav>
+  <button class="tab active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/></svg>Dashboard</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/></svg>Zones</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Computers</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-5.5 5.5M12 12l5.5 5.5"/></svg>Network</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="14" r="3.2"/><circle cx="12" cy="7.5" r="1.1"/></svg>Speakermaps</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Account</button>
+  <button class="tab"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--wall)"/><circle cx="15" cy="12" r="2.2" fill="var(--wall)"/><circle cx="8" cy="17" r="2.2" fill="var(--wall)"/></svg>Settings</button>
+</nav>
+<script>
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');}));
+</script>
+</body>
+</html>

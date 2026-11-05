@@ -1,0 +1,1370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orange County</title>
+<style>
+:root{
+  --wall:#16261e; --wall-hi:#1c2e25; --void:#0b1511; --void-hi:#0f1a15;
+  --ink:#eaf0eb; --ink-2:#a1b5a8; --ink-3:#5f7367;
+  --ok:#7ad99b; --warn:#e8bb62; --off:#dc7a66; --accent:#94e3ad;
+  --line:var(--line); --fill:var(--fill); --fill-hi:var(--fill-hi);
+  --hover:var(--hover); --line-strong:var(--line-strong); --inset:var(--inset);
+  --pad:56px;
+}
+:root[data-theme="light"]{
+  --wall:#e9e3d6; --wall-hi:#dfd8c9; --void:#f5f1e9; --void-hi:#efeadf;
+  --ink:#1d2a23; --ink-2:#56665d; --ink-3:#8f9a93;
+  --ok:#3f8f5e; --warn:#b07c14; --off:#c2574a; --accent:#3e8a5e;
+  --line:rgba(0,0,0,.07); --fill:rgba(0,0,0,.05); --fill-hi:rgba(0,0,0,.09);
+  --hover:rgba(0,0,0,.035); --line-strong:rgba(0,0,0,.22); --inset:rgba(0,0,0,.07);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--wall); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  font-size:15px; line-height:1.4; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden; font-variant-numeric:tabular-nums;
+}
+button{font-family:inherit;border:0;background:none;color:inherit;cursor:pointer;text-align:left}
+button:disabled{opacity:.4;cursor:default}
+
+header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad);flex:none}
+.wordmark{font-size:14px;font-weight:500;color:var(--ink-3)}
+.wordmark b{color:var(--ink-2);font-weight:600}
+.clock{color:var(--ink-3);font-size:14px}
+
+main{flex:1;overflow:auto;padding:8px var(--pad) 40px}
+.page{max-width:1120px;margin:0 auto}
+
+/* shared marks */
+.mark{width:7px;height:7px;border-radius:50%;background:var(--ok);flex:none}
+.warn > .mark, .warn .zh .mark{background:var(--warn)}
+.off > .mark, .off .zh .mark{background:var(--off);opacity:.6}
+.idle > .mark, .idle .zh .mark{background:var(--ink-3);opacity:.5}
+.act{font-size:14px;color:var(--ink-2);padding:7px 14px;border-radius:999px;background:var(--fill);transition:all .15s;white-space:nowrap}
+.act:hover{color:var(--ink);background:var(--fill-hi)}
+.act:active{background:var(--fill-hi)}
+.go{color:var(--ink-3);font-size:13.5px;white-space:nowrap}
+.go:hover{color:var(--ink-2)}
+.chip{font-size:13.5px;color:var(--ink-2);padding:6px 12px;border-radius:999px;background:var(--fill);transition:background .15s}
+.chip:hover{background:var(--fill-hi);color:var(--ink)}
+.chip.warn{color:var(--warn)} .chip.off{color:var(--off)}
+.chip.on{color:var(--accent)}
+
+/* ---- this computer (only when the UI is served from a renderer) ---- */
+.local{flex:none;padding:4px var(--pad) 0}
+.me{max-width:1120px;margin:0 auto 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px;padding:10px 0 30px;border-bottom:1px solid var(--line)}
+.me .row{display:flex;align-items:center;gap:12px;height:32px}
+.me .lbl{font-size:13px;color:var(--ink-3)}
+.me h1{font-size:19px;font-weight:600;letter-spacing:-.01em}
+.me .sp{color:var(--ink-2);font-size:14px}
+.me .state{color:var(--ink-2);font-size:13.5px}
+.me.warn .mark{background:var(--warn)} .me.warn .state{color:var(--warn)}
+.me .facts{display:flex;gap:40px;margin-top:12px}
+.me .fact{display:flex;flex-direction:column;gap:2px}
+.me .fact .k{font-size:12px;color:var(--ink-3)}
+.me .fact .v{font-size:14px;color:var(--ink-2)}
+.me-actions{display:flex;gap:8px;align-items:center;height:32px}
+.me-actions .open{background:none;color:var(--ink-3);padding-right:2px}
+.me-actions .open:hover{color:var(--ink-2);background:none}
+.toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--void);color:var(--ink-2);padding:10px 18px;border-radius:999px;font-size:13.5px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+
+/* ---- dashboard ---- */
+.space{padding:26px 0 10px}
+.space + .space{margin-top:14px;border-top:1px solid var(--line)}
+.space-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.space-h h2{font-size:24px;font-weight:500;letter-spacing:-.01em}
+.cpus{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.cpu{font-size:13.5px;color:var(--ink-2);padding:6px 12px;border-radius:999px;transition:background .15s}
+.cpu:hover{background:var(--wall-hi)}
+.cpu.warn{color:var(--warn)} .cpu.off{color:var(--off)}
+.cpu span{color:var(--ink-3);margin-left:6px}
+.cpu.warn span{color:var(--warn);opacity:.85}
+.slots{display:flex;flex-direction:column}
+.slot{position:relative;display:grid;grid-template-columns:1fr 1.4fr .7fr 160px;align-items:center;gap:20px;padding:0 8px 0 28px;height:60px;width:100%;border-radius:12px;transition:background .15s}
+.slot + .slot{border-top:1px solid var(--line)}
+.slot:hover{background:var(--hover)}
+.slot > .mark{position:absolute;left:6px;top:50%;margin-top:-3.5px}
+.slot .name{font-size:17px;font-weight:500;color:var(--ink)}
+.slot .now{color:var(--ink-2);font-size:14px}
+.slot .now.dim{color:var(--ink-3)}
+.slot .st{font-size:13.5px;color:var(--ink-3)}
+.slot.warn .st{color:var(--warn)} .slot.off .st{color:var(--off)}
+.slot.off{opacity:.5}
+.level{height:4px;border-radius:2px;background:rgba(164,184,171,.07);overflow:hidden}
+.level i{display:block;height:100%;border-radius:2px;background:var(--accent);opacity:.75;transform-origin:left;animation:breathe 2.4s ease-in-out infinite}
+.slot.warn .level i{background:var(--warn)}
+.slot.idle .level i,.slot.off .level i{animation:none;width:0}
+@keyframes breathe{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.9)}}
+.events{padding:30px 0 0;margin-top:26px;border-top:1px solid var(--line)}
+.events h2{font-size:14px;font-weight:500;color:var(--ink-3);margin-bottom:6px}
+.events ul{list-style:none}
+.events li{display:flex;gap:20px;padding:7px 0;font-size:14px;color:var(--ink-3)}
+.events time{width:44px;flex:none}
+.events b{color:var(--ink-2);font-weight:500}
+.events .warn{color:var(--warn)} .events .off{color:var(--off)}
+
+/* ---- zones ---- */
+.zones{display:grid;grid-template-columns:300px 1fr;gap:56px;padding-top:12px}
+.zlist{position:sticky;top:0;align-self:start}
+.zlist h3{font-size:13px;color:var(--ink-3);font-weight:500;margin:24px 0 6px 4px}
+.zlist h3:first-child{margin-top:0}
+.zrow{position:relative;display:flex;flex-direction:column;gap:1px;width:100%;padding:10px 14px 10px 26px;border-radius:12px;transition:background .15s}
+.zrow:hover{background:var(--hover)}
+.zrow.sel{background:var(--fill)}
+.zrow > .mark{position:absolute;left:10px;top:50%;margin-top:-3.5px}
+.zrow .name{font-size:16px;font-weight:500}
+.zrow .sub{font-size:13px;color:var(--ink-3)}
+.zrow.off{opacity:.55}
+
+.zh{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.zh h2{font-size:24px;font-weight:500;letter-spacing:-.01em}
+.zh .sp{color:var(--ink-2)}
+.zh .state{color:var(--ink-3);font-size:14px}
+.zdetail.warn .zh .state{color:var(--warn)} .zdetail.off .zh .state{color:var(--off)}
+
+.player{display:flex;align-items:center;gap:22px;padding:0 0 26px}
+.play{width:60px;height:60px;border-radius:50%;background:var(--fill);display:grid;place-items:center;transition:background .15s;flex:none}
+.play:hover{background:var(--fill-hi)}
+.play svg{width:22px;height:22px;fill:var(--ink)}
+.play.on svg{fill:var(--accent)}
+.np{flex:1;min-width:0}
+.np .k{font-size:12.5px;color:var(--ink-3)}
+.np .t{font-size:20px;font-weight:500;margin-top:2px}
+.np .t.dim{color:var(--ink-3);font-weight:400}
+.np .s{font-size:13.5px;color:var(--ink-3);margin-top:2px}
+
+.vol{display:flex;align-items:center;gap:18px;padding:0 0 30px;border-bottom:1px solid var(--line)}
+.vol .k{font-size:13px;color:var(--ink-3);width:60px}
+.vol .v{width:36px;text-align:right;color:var(--ink-2);font-size:14px}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,var(--accent) var(--p),rgba(164,184,171,.12) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--ink);box-shadow:0 1px 4px var(--inset);cursor:pointer}
+
+.settings{padding-top:8px}
+.srow{display:grid;grid-template-columns:150px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:58px;border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.srow .k{font-size:14px;color:var(--ink-3)}
+.srow .v{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ink);font-size:15px}
+.field{font:inherit;color:var(--ink);background:none;border:0;border-bottom:1px solid transparent;padding:4px 0;min-width:220px;outline:none;transition:border-color .15s}
+.field:hover,.field:focus{border-bottom-color:var(--line-strong)}
+select.field{appearance:none;-webkit-appearance:none;padding-right:24px;cursor:pointer;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235f7367' stroke-width='2.2' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>") no-repeat right center}
+select.field option{background:var(--wall);color:var(--ink)}
+.cpulist{flex-direction:column;align-items:stretch;gap:0;padding:12px 0}
+.cpuline{display:grid;grid-template-columns:16px auto 1fr;align-items:center;gap:12px;padding:8px 10px 8px 6px;margin:0 -6px;border-radius:10px;width:calc(100% + 12px);font-size:15px;color:var(--ink);transition:background .15s;white-space:nowrap}
+.cpuline .ch{text-align:right}
+.cpuline:hover{background:var(--fill)}
+.cpuline .ch{color:var(--ink-3);font-size:13.5px}
+.cpuline.warn .n{color:var(--warn)} .cpuline.off .n{color:var(--off)}
+.cpuline > .mark{position:static;margin:0}
+.notes{display:grid;grid-template-columns:150px 1fr;gap:20px;align-items:start;padding:26px 0 0;margin-top:6px}
+.notes .k{font-size:14px;color:var(--ink-3);padding-top:10px}
+.notes-field{font:inherit;font-size:14.5px;line-height:1.5;color:var(--ink-2);background:var(--fill);border:0;border-radius:14px;padding:12px 14px;width:100%;min-height:84px;resize:vertical;outline:none;transition:background .15s}
+.notes-field::placeholder{color:var(--ink-3)}
+.notes-field:hover,.notes-field:focus{background:var(--fill-hi);color:var(--ink)}
+.step{display:inline-flex;align-items:center;gap:4px}
+.step button{width:30px;height:30px;border-radius:50%;background:var(--fill);display:grid;place-items:center;color:var(--ink-2);font-size:17px;line-height:1}
+.step button:hover{background:var(--fill-hi);color:var(--ink)}
+.step .n{min-width:70px;text-align:center}
+
+/* ---- computers ---- */
+.sec-h{font-size:13px;color:var(--ink-3);font-weight:500;margin:34px 0 2px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.sec-h:first-of-type{margin-top:8px}
+.facts{display:flex;gap:40px;margin-top:0}
+.cfacts{display:flex;flex-wrap:wrap;gap:16px 40px;padding:0 0 26px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.cfacts .fact{white-space:nowrap}
+.cfacts .fact{display:flex;flex-direction:column;gap:2px}
+.cfacts .k{font-size:12px;color:var(--ink-3)} .cfacts .v{font-size:14px;color:var(--ink-2)}
+.cfacts .v.warn{color:var(--warn)}
+.cactions{margin-left:auto;display:flex;gap:8px;align-self:center}
+.tag{font-size:12px;color:var(--ink-3);padding:3px 9px;border-radius:999px;background:var(--fill);margin-left:4px}
+.toggle{width:32px;height:18px;border-radius:9px;background:var(--fill-hi);position:relative;transition:background .15s;flex:none;padding:0}
+.toggle i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--ink-2);transition:left .15s,background .15s}
+.toggle.on{background:var(--accent)} .toggle.on i{left:16px;background:var(--void)}
+.hint{font-size:13px;color:var(--ink-3)}
+.mono{font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.field.short{min-width:120px;width:140px}
+.field.mid{min-width:0;width:auto;max-width:210px;flex:1 1 auto}
+.srow .v.nowrap{flex-wrap:nowrap;gap:14px;min-width:0}
+.field.num{min-width:80px;width:90px}
+.field.invalid{border-bottom-color:var(--off)}
+.proc{display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:20px;min-height:58px;border-bottom:1px solid var(--line)}
+.proc:last-child{border-bottom:0}
+.proc .k{font-size:15px;color:var(--ink)}
+.proc .st{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink-2)}
+.proc .st.off{color:var(--ink-3)}
+.proc .boot{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-3)}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 28px;margin-top:8px}
+.rrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;font-size:14px;color:var(--ink-2)}
+.rrow select{min-width:150px}
+
+/* ---- network ---- */
+.net .sec-h{display:flex;justify-content:space-between;align-items:baseline}
+.net .sec-h .go{font-size:13px}
+.nhead,.nrow{display:grid;grid-template-columns:1.1fr .8fr 1.5fr 1fr .6fr .8fr .9fr;gap:14px;align-items:center}
+.nhead{font-size:12px;color:var(--ink-3);padding:12px 8px 8px}
+.nrow{width:100%;padding:0 8px;height:54px;border-top:1px solid var(--line);border-radius:10px;font-size:14px;color:var(--ink-2);transition:background .15s;white-space:nowrap}
+.nrow:hover{background:var(--hover)}
+.nrow .n{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:10px}
+.nrow .warnv{color:var(--warn)}
+.nrow .offv{color:var(--off)}
+.issues{margin:14px 0 0;padding:0;list-style:none}
+.issues li{font-size:13.5px;color:var(--warn);padding:4px 0}
+.issues li.off{color:var(--off)}
+.drow{display:grid;grid-template-columns:1.2fr 1fr 1fr auto auto;gap:16px;align-items:center;min-height:58px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.drow:last-child{border-bottom:0}
+.drow .n{color:var(--ink);font-size:15px;font-weight:500}
+.irow{display:grid;grid-template-columns:1.1fr .5fr 1.1fr 1.2fr auto auto;gap:16px;align-items:center;min-height:58px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.irow:last-child{border-bottom:0}
+.irow .n{color:var(--ink);font-size:15px;font-weight:500;padding:6px 0}
+.irow .n:hover{color:var(--accent)}
+.zpick{display:flex;flex-wrap:wrap;gap:8px}
+.zpick .chip.on{background:var(--fill-hi);color:var(--ink)}
+.irow.offi .n{color:var(--ink-3)}
+.tests{list-style:none;margin-top:14px}
+.tests li{display:flex;gap:16px;padding:7px 0;font-size:13.5px;color:var(--ink-3);border-top:1px solid var(--line)}
+.tests li b{color:var(--ink-2);font-weight:500}
+.tests li .ok{color:var(--ok)} .tests li .bad{color:var(--off)}
+
+/* ---- speaker maps ---- */
+.zrow.nomark{padding-left:14px}
+.field.title{font-size:24px;font-weight:500;min-width:280px;padding:2px 0;letter-spacing:-.01em}
+.ctools{display:flex;align-items:center;gap:14px;margin:4px 0 10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--fill);border-radius:999px;padding:3px}
+.seg button{padding:5px 13px;border-radius:999px;font-size:13px;color:var(--ink-3)}
+.seg button.on{background:var(--wall-hi);color:var(--ink)}
+.canvas{background:var(--void);border-radius:24px;overflow:hidden;box-shadow:inset 0 2px 8px var(--inset)}
+.canvas svg{display:block;width:100%;height:auto;aspect-ratio:16/10;touch-action:none;user-select:none}
+.spk{cursor:grab} .spk:active{cursor:grabbing}
+.spk text{pointer-events:none;fill:var(--void);font-weight:600}
+.spk.sel circle{stroke:var(--ink);stroke-width:.07}
+.sphead,.sprow{display:grid;grid-template-columns:18px 1.2fr 1.1fr 62px 66px 66px 66px 66px 34px 24px;gap:10px;align-items:center}
+.sphead{font-size:12px;color:var(--ink-3);padding:22px 6px 6px}
+.sprow{padding:3px 6px;border-top:1px solid var(--line);border-radius:10px;min-height:44px}
+.sprow.sel{background:var(--fill)}
+.sprow .field{min-width:0;width:100%;font-size:14px;padding:6px 0}
+.sprow select.field{padding-right:18px}
+.sprow .dot{width:9px;height:9px;border-radius:50%;justify-self:center}
+.sprow .x{color:var(--ink-3);font-size:17px;text-align:center;line-height:1} .sprow .x:hover{color:var(--off)}
+.res{display:flex;gap:14px;flex-wrap:wrap;padding:14px 0 4px}
+.resitem{display:flex;flex-direction:column;gap:6px;width:124px;font-size:12.5px;color:var(--ink-2)}
+.resitem .thumb{height:82px;border-radius:12px;background:var(--fill);display:grid;place-items:center;color:var(--ink-3);font-size:11px;letter-spacing:.06em}
+.resitem .thumb.photo{background:linear-gradient(135deg,#26402f,#13231b)}
+.resitem .hint{font-size:12px}
+
+/* ---- account ---- */
+.who{display:flex;align-items:center;gap:18px;padding:10px 0 26px;border-bottom:1px solid var(--line)}
+.who .avatar{width:52px;height:52px;border-radius:50%;background:var(--fill-hi);display:grid;place-items:center;font-weight:600;font-size:17px;color:var(--ink)}
+.who .n{font-size:20px;font-weight:500}
+.who .s{font-size:14px;color:var(--ink-3);margin-top:2px}
+.who .cactions{margin-left:auto}
+.urow{display:grid;grid-template-columns:1.2fr 1.5fr 150px .8fr auto;gap:16px;align-items:center;min-height:58px;border-bottom:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.urow:last-child{border-bottom:0}
+.urow .n{color:var(--ink);font-size:15px;font-weight:500}
+.urow .field{min-width:0;width:100%}
+.srow .n{color:var(--ink);font-size:15px;font-weight:500}
+.lic{font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.bar{height:4px;border-radius:2px;background:rgba(164,184,171,.1);overflow:hidden;width:140px;display:inline-block;vertical-align:middle;margin:0 10px 0 4px}
+.bar i{display:block;height:100%;background:var(--accent);opacity:.8}
+.bar.warn i{background:var(--warn)}
+
+/* ---- settings ---- */
+.results{list-style:none;margin-top:10px}
+.results li{display:grid;grid-template-columns:130px 1fr auto;gap:16px;padding:8px 0;border-top:1px solid var(--line);font-size:14px;color:var(--ink-2)}
+.results li .r{font-size:13px}
+.results li .r.ok{color:var(--ok)} .results li .r.bad{color:var(--off)}
+.walk{display:flex;align-items:center;gap:18px;padding:16px 18px;margin-top:10px;border-radius:18px;background:var(--void);box-shadow:inset 0 2px 8px var(--inset)}
+.walk .big{font-size:18px;font-weight:500}
+.walk .sub{font-size:13px;color:var(--ink-3)}
+.walk .cactions{margin-left:auto}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.log{list-style:none;margin-top:10px;max-height:300px;overflow:auto;border-top:1px solid var(--line)}
+.log li{display:grid;grid-template-columns:86px 90px 64px 1fr;gap:12px;padding:6px 0;font-size:13px;color:var(--ink-2);border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.log li .lv{color:var(--ink-3)} .log li .lv.w{color:var(--warn)} .log li .lv.e{color:var(--off)} .log li .lv.d{color:var(--ink-3);opacity:.7}
+.console{margin-top:10px}
+.console .cmd{display:flex;gap:10px;align-items:center;margin-top:8px}
+.console .cmd input{flex:1}
+.reply{margin-top:12px;padding:14px 16px;border-radius:14px;background:var(--void);box-shadow:inset 0 2px 8px var(--inset);font-size:13px;color:var(--ink-2);white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;min-height:48px}
+.sprow .tone{color:var(--ink-3);font-size:13px;text-align:center} .sprow .tone:hover,.sprow .tone.on{color:var(--accent)}
+
+/* ---- sheets (pickers) ---- */
+.sheet-bg{position:fixed;inset:0;background:rgba(5,10,8,.55);display:grid;place-items:center;z-index:10}
+.sheet{width:520px;max-height:72vh;overflow:auto;background:var(--wall);border-radius:28px;padding:26px 28px 20px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.sheet h3{font-size:18px;font-weight:500}
+.sheet p{color:var(--ink-3);font-size:13.5px;margin:4px 0 14px}
+.filt{display:flex;gap:6px;margin-bottom:8px}
+.filt button{font-size:13px;color:var(--ink-3);padding:6px 12px;border-radius:999px}
+.filt button.on{background:var(--fill-hi);color:var(--ink)}
+.filt.tabs{margin:14px 0 10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.filt.tabs button{font-size:14px;padding:7px 14px}
+.item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;width:100%;padding:0 12px 0 0;border-radius:12px}
+.item .pick{flex:1;padding:12px 12px;width:100%}
+.item.on .pick .t{color:var(--accent)}
+.item > .go{opacity:.7}
+.item:hover > .go{opacity:1}
+.item:hover{background:var(--hover)}
+.item .t{font-size:15px}
+.item .s{font-size:13px;color:var(--ink-3)}
+.item.on .t{color:var(--accent)}
+.item .tick{color:var(--accent);font-size:14px}
+.sec{font-size:12.5px;color:var(--ink-3);margin:16px 0 4px 12px}
+.sec:first-of-type{margin-top:4px}
+.btns{display:flex;gap:18px;align-items:center;margin-top:18px}
+.srow .v .name-link{color:var(--ink);font-size:15px}
+.srow .v .name-link:hover{color:var(--accent)}
+
+/* ---- placeholder pages ---- */
+.stub{padding:40px 0}
+.stub h1{font-size:28px;font-weight:500;letter-spacing:-.01em}
+.stub p{color:var(--ink-3);margin-top:8px;max-width:560px}
+.stub .alcove{margin-top:28px;background:var(--void);border-radius:28px;min-height:260px;box-shadow:inset 0 2px 8px var(--inset);display:grid;place-items:center;color:var(--ink-3);font-size:14px;text-align:center;padding:24px}
+.stub .alcove b{display:block;color:var(--ink-2);font-weight:500;font-size:20px;margin-bottom:6px}
+.back{display:inline-block;color:var(--ink-3);font-size:14px;margin-bottom:18px}
+.back:hover{color:var(--ink-2)}
+
+/* ---- tabs ---- */
+nav{height:84px;flex:none;display:flex;justify-content:center;align-items:center;padding:0 var(--pad) 14px}
+.trough{display:flex;gap:2px;padding:5px;border-radius:26px;background:var(--void);box-shadow:inset 0 2px 8px var(--inset)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;width:100px;padding:9px 0 7px;border-radius:21px;color:var(--ink-3);font-size:11.5px;transition:all .18s}
+.tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.tab:hover{color:var(--ink-2)}
+.tab.active{background:var(--wall-hi);color:var(--ink)}
+.tab.active svg{stroke:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark"><b>Orange County</b></div>
+  <div class="clock" id="clock"></div>
+</header>
+<div class="local" id="local"></div>
+<main id="main"></main>
+<div id="sheet"></div>
+<div class="toast" id="toast"></div>
+<nav><div class="trough" id="tabs"></div></nav>
+
+<script>
+/* ---------- fake data (one source of truth for every page) ---------- */
+const PLAN_LOUNGE = 'data:image/svg+xml;utf8,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%201400%201000%27%3E%3Crect%20width=%271400%27%20height=%271000%27%20fill=%27%23d9d0b8%27/%3E%3Cg%20fill=%27none%27%20stroke=%27%234e4330%27%20stroke-width=%2722%27%20stroke-linejoin=%27round%27%3E%3Cpath%20d=%27M40%2040%20H1360%20V960%20H40%20Z%27/%3E%3Cpath%20d=%27M1000%2040%20V330%20H1360%27/%3E%3C/g%3E%3Cg%20fill=%27none%27%20stroke=%27%235c4f38%27%20stroke-width=%2722%27%3E%3Cpath%20d=%27M40%20960%20H520%20M760%20960%20H1360%27/%3E%3C/g%3E%3Cg%20stroke=%27%235c4f38%27%20stroke-width=%276%27%20fill=%27none%27%3E%3Cpath%20d=%27M520%20960%20a120%20120%200%200%201%20120%20-120%27/%3E%3Cpath%20d=%27M760%20960%20a120%20120%200%200%200%20-120%20-120%27/%3E%3C/g%3E%3Cg%20fill=%27%23c3b89a%27%20stroke=%27%236b5d44%27%20stroke-width=%276%27%3E%3Crect%20x=%271050%27%20y=%2790%27%20width=%27260%27%20height=%2790%27%20rx=%2720%27/%3E%3Crect%20x=%27110%27%20y=%27110%27%20width=%27180%27%20height=%27300%27%20rx=%2710%27/%3E%3C/g%3E%3Cg%20fill=%27none%27%20stroke=%27%236b5d44%27%20stroke-width=%275%27%3E%3Cpath%20d=%27M110%20150%20H290%20M110%20190%20H290%20M110%20230%20H290%20M110%20270%20H290%20M110%20310%20H290%20M110%20350%20H290%20M110%20390%20H290%27/%3E%3C/g%3E%3Cg%20fill=%27%234e4330%27%3E%3Ccircle%20cx=%27520%27%20cy=%27340%27%20r=%2728%27/%3E%3Ccircle%20cx=%27880%27%20cy=%27340%27%20r=%2728%27/%3E%3Ccircle%20cx=%27520%27%20cy=%27700%27%20r=%2728%27/%3E%3Ccircle%20cx=%27880%27%20cy=%27700%27%20r=%2728%27/%3E%3C/g%3E%3Cg%20fill=%27%23c3b89a%27%20stroke=%27%236b5d44%27%20stroke-width=%276%27%3E%3Ccircle%20cx=%27620%27%20cy=%27520%27%20r=%2770%27/%3E%3Ccircle%20cx=%27820%27%20cy=%27520%27%20r=%2770%27/%3E%3Crect%20x=%27360%27%20y=%27440%27%20width=%27110%27%20height=%27180%27%20rx=%2724%27/%3E%3Crect%20x=%27930%27%20y=%27440%27%20width=%27110%27%20height=%27180%27%20rx=%2724%27/%3E%3Crect%20x=%27560%27%20y=%27320%27%20width=%27280%27%20height=%2770%27%20rx=%2724%27/%3E%3Crect%20x=%27560%27%20y=%27650%27%20width=%27280%27%20height=%2770%27%20rx=%2724%27/%3E%3C/g%3E%3Cg%20fill=%27%23c3b89a%27%20stroke=%27%236b5d44%27%20stroke-width=%276%27%3E%3Crect%20x=%271110%27%20y=%27480%27%20width=%27200%27%20height=%27120%27%20rx=%2716%27/%3E%3Crect%20x=%271110%27%20y=%27660%27%20width=%27200%27%20height=%27120%27%20rx=%2716%27/%3E%3C/g%3E%3Cg%20font-family=%27Helvetica,%20Arial,%20sans-serif%27%20fill=%27%236b5d44%27%20font-size=%2734%27%3E%3Ctext%20x=%271180%27%20y=%27148%27%3EReception%3C/text%3E%3Ctext%20x=%27120%27%20y=%27470%27%3EStairs%3C/text%3E%3Ctext%20x=%27640%27%20y=%27590%27%3ELounge%3C/text%3E%3Ctext%20x=%27580%27%20y=%27935%27%3EEntrance%3C/text%3E%3Ctext%20x=%271130%27%20y=%27560%27%3EBar%3C/text%3E%3C/g%3E%3C/svg%3E';
+let SPK = 0;
+const spk = (label, computer, ch, x, y, z, db=0) => ({ id:'s'+(++SPK), label, computer, ch, x:+x.toFixed(1), y:+y.toFixed(1), z, db });
+const ring = (n, r, z, comp, ch0) => Array.from({length:n}, (_, i) => { const a = i/n*2*Math.PI; return spk(`Ring ${i+1}`, comp, ch0+i, r*Math.sin(a), r*Math.cos(a), z); });
+const bed714 = (c1, ch1, c2, ch2) => [
+  spk('Left', c1, ch1, -2.2, 2.6, 1.2), spk('Center', c1, ch1+1, 0, 3, 1.2), spk('Right', c1, ch1+2, 2.2, 2.6, 1.2), spk('Sub', c1, ch1+3, -1, 3.2, 0.3, -6),
+  spk('Side L', c1, ch1+4, -3.2, 0, 1.2), spk('Side R', c1, ch1+5, 3.2, 0, 1.2), spk('Rear L', c1, ch1+6, -2, -2.8, 1.2), spk('Rear R', c1, ch1+7, 2, -2.8, 1.2),
+  spk('Top FL', c2, ch2, -1.6, 1.6, 3), spk('Top FR', c2, ch2+1, 1.6, 1.6, 3), spk('Top RL', c2, ch2+2, -1.6, -1.6, 3), spk('Top RR', c2, ch2+3, 1.6, -1.6, 3) ];
+const line = (n, len, y, z, comp, ch0) => Array.from({length:n}, (_, i) => spk(`Line ${i+1}`, comp, ch0+i, -len/2 + i*len/(n-1), y, z));
+const quad = (w, z, comp, ch0) => [ spk('Front L', comp, ch0, -w, w, z), spk('Front R', comp, ch0+1, w, w, z), spk('Rear L', comp, ch0+2, -w, -w, z), spk('Rear R', comp, ch0+3, w, -w, z) ];
+const DATA = {
+  spaces: [
+    { id:'atrium',  name:'Atrium',  zones:['lobby','mezzanine','gallery','lounge'], computers:['oc01','oc02','oc03'] },
+    { id:'terrace', name:'Terrace', zones:['deck','poolbar','cabanas'],    computers:['oc04'] },
+  ],
+  zones: {
+    lobby:     { name:'Lobby',        status:'online',   rendering:true,  content:'drift', volume:72, level:.62, computers:['oc01'],        map:'lobby12',  library:'both', scenes:['drift','rain'], boot:{ on:true, mode:'last', scene:null, list:null }, notes:'Ring of 12 ceiling speakers. Amp rack is in closet B behind reception.',  trim:-3, max:-6 },
+    mezzanine: { name:'Mezzanine',    status:'online',   rendering:true,  content:'amb04', volume:58, level:.48, computers:['oc01','oc02'], map:'mezz12',  library:'local', scenes:['amb04','forest'], boot:{ on:true, mode:'last', scene:null, list:null } },
+    gallery:   { name:'Gallery',      status:'degraded', rendering:true,  content:'field', volume:80, level:.72, computers:['oc02','oc03'], map:'gallery7',  library:'local', scenes:['field'], boot:{ on:true, mode:'last', scene:null, list:null }, notes:'Dropouts started Nov 3 after the MOTU firmware update. Rollback pending.' },
+    lounge:    { name:'Lounge',       status:'online',   rendering:true,  content:'forest', volume:60, level:.5, computers:['oc03'], map:'lounge16', scenes:['forest','rain'], boot:{ on:true, mode:'last', scene:null, list:null }, notes:'Plan is the architect\'s DWG export, scaled to the 14 m north wall.' },
+    deck:      { name:'Terrace Deck', status:'online',   rendering:true,  content:'tide',  volume:65, level:.55, computers:['oc04'],        map:'terrace8', scenes:['tide','rain'], boot:{ on:true, mode:'last', scene:null, list:null },  trim:0,  max:-6 },
+    poolbar:   { name:'Pool Bar',     status:'online',   rendering:false, content:'rain',  volume:50, level:0,   computers:['oc04'],        map:'pool4', scenes:['rain'], boot:{ on:false, mode:'last', scene:null, list:null } },
+    cabanas:   { name:'Cabanas',      status:'offline',  rendering:false, content:null,    volume:40, level:0,   computers:['oc04'],        map:'cabana4',  library:'both', scenes:[], boot:{ on:false, mode:'last', scene:null, list:null },  trim:0,  max:-12, lastSeen:'13:48' },
+  },
+  computers: {
+    oc01: { name:'M5-OC01', space:'atrium',  status:'online',   load:34, ptp:{ state:'locked', offset:'4 µs' }, up:'6 days',  uuid:'8F3A2C1E-5B7D-4E9A-9C21-0D4F6A1B2C01', model:'Mac mini M5', os:'macOS 27.0', version:'2.4.1',
+            perms:{ energy:true,  login:true },
+            iface:'en0', ifaces:[{id:'en0',label:'Ethernet',ip:'10.0.1.21'},{id:'en1',label:'Wi-Fi',ip:'10.0.1.87'},{id:'en7',label:'USB dongle',ip:null}],
+            multicast:'239.1.2.3',
+            device:'AES67 stream', channels:16, aes67:{ stream:'OC01-out', outDev:'en7', ip:'239.69.1.21', igmp:true },
+            input:{ enabled:false, device:'AES67 stream', channels:8, ip:'239.69.2.21' },
+            procs:{ renderer:{on:true}, rest:{on:true, port:7378}, osc:{on:true, port:9002} }, log:'Info',
+            notes:'Rack 1, top shelf. Dongle is for the AES67 VLAN.' },
+    oc02: { name:'M5-OC02', space:'atrium',  status:'online',   load:41, ptp:{ state:'locked', offset:'11 µs' }, up:'6 days',  uuid:'2B9C7E41-1A3F-4D8E-B5C6-7E8F9A0B1C02', model:'Mac mini M5', os:'macOS 27.0', version:'2.4.1',
+            perms:{ energy:true,  login:true },
+            iface:'en0', ifaces:[{id:'en0',label:'Ethernet',ip:'10.0.1.22'},{id:'en1',label:'Wi-Fi',ip:null}],
+            multicast:'239.1.2.4',
+            device:'AES67 stream', channels:16, aes67:{ stream:'OC02-out', outDev:'en0', ip:'239.69.1.22', igmp:false },
+            input:{ enabled:true, device:'Dante Virtual Soundcard', channels:8, ip:'' },
+            procs:{ renderer:{on:true}, rest:{on:true, port:7378}, osc:{on:true, port:9002} }, log:'Info', notes:'' },
+    oc03: { name:'M5-OC03', space:'atrium',  status:'degraded', load:88, ptp:{ state:'unlocked', offset:'—' }, up:'2 hours', note:'Interface dropouts', uuid:'C4D5E6F7-8A9B-4C0D-9E1F-2A3B4C5D6E03', model:'Mac Studio M5 Max', os:'macOS 27.0', version:'2.4.0',
+            perms:{ energy:false, login:true },
+            iface:'en0', ifaces:[{id:'en0',label:'Ethernet',ip:'10.0.1.23'},{id:'en1',label:'Wi-Fi',ip:null}],
+            multicast:'239.1.2.3',
+            device:'MOTU 16A', channels:32, aes67:{ stream:'OC03-out', outDev:'en0', ip:'239.69.1.23', igmp:false },
+            input:{ enabled:false, device:'MOTU 16A', channels:8, ip:'' },
+            procs:{ renderer:{on:true}, rest:{on:true, port:7378}, osc:{on:false, port:9002} }, log:'Debug',
+            notes:'Dropouts since the Nov 3 MOTU firmware update. Rollback pending.' },
+    oc04: { name:'M5-OC04', space:'terrace', status:'online',   load:22, ptp:{ state:'locked', offset:'7 µs' }, up:'14 days', uuid:'7A8B9C0D-1E2F-4A3B-8C4D-5E6F7A8B9C04', model:'Mac mini M5', os:'macOS 26.4', version:'2.4.1',
+            perms:{ energy:true,  login:false },
+            iface:'en0', ifaces:[{id:'en0',label:'Ethernet',ip:'10.0.2.11'},{id:'en1',label:'Wi-Fi',ip:'10.0.2.40'}],
+            multicast:'239.1.2.3',
+            device:'Dante Virtual Soundcard', channels:8, aes67:{ stream:'OC04-out', outDev:'en0', ip:'239.69.2.11', igmp:false },
+            input:{ enabled:false, device:'Dante Virtual Soundcard', channels:8, ip:'' },
+            procs:{ renderer:{on:true}, rest:{on:true, port:7378}, osc:{on:true, port:9002} }, log:'Warning', notes:'' },
+  },
+  devices: { 'AES67 stream':{ output:'AES67', outs:64 }, 'RME Fireface UFX':{ output:'Core Audio', outs:30 }, 'MOTU 16A':{ output:'Core Audio', outs:32 }, 'Dante Virtual Soundcard':{ output:'Dante', outs:64 } },
+  library: [
+    { id:'drift',  title:'Morning Drift',    source:'Cloud', dur:'42:10' },
+    { id:'amb04',  title:'Ambient Set 04',   source:'Local', dur:'1:12:00' },
+    { id:'field',  title:'Field Recordings', source:'Local', dur:'58:30' },
+    { id:'tide',   title:'Evening Tide',     source:'Cloud', dur:'36:45' },
+    { id:'rain',   title:'Rain on Canvas',   source:'Cloud', dur:'50:00' },
+    { id:'forest', title:'Forest Floor',     source:'Local', dur:'1:05:20' },
+  ],
+  lists: { morning:'Morning rotation', evening:'Evening rotation' },   // placeholder: lists are not built on the renderer yet
+  speakermaps: {
+    lobby12:  { name:'Lobby Ring 12',   file:{ name:'lobby-ring-12.json', uploaded:'Oct 28' }, plan:{ src:null, width:12, opacity:.4 }, notes:'Ring is centered on the lobby chandelier.',
+                speakers: ring(12, 4.2, 3.0, 'oc01', 1), resources:[ { name:'ceiling-grid.jpg', kind:'photo', size:'2.1 MB' }, { name:'lobby-plan.pdf', kind:'file', size:'640 KB' } ] },
+    mezz12:   { name:'Mezzanine 7.1.4', file:{ name:'mezz-714.json', uploaded:'Oct 28' }, plan:{ src:null, width:10, opacity:.4 }, notes:'',
+                speakers: bed714('oc02', 1, 'oc01', 13), resources:[] },
+    gallery7: { name:'Gallery 7.1.4',   file:{ name:'gallery-714.json', uploaded:'Nov 3' }, plan:{ src:null, width:10, opacity:.4 }, notes:'Rear pair is behind the partition wall.',
+                speakers: bed714('oc02', 9, 'oc03', 1), resources:[ { name:'rear-wall.jpg', kind:'photo', size:'1.8 MB' } ] },
+    lounge16: { name:'Lounge Plan 16',  file:{ name:'lounge-plan-16.json', uploaded:'today' }, plan:{ src:PLAN_LOUNGE, ratio:1.4, width:14, opacity:.45 }, notes:'Ceiling speakers at 3.2 m; the two over the entrance are on the lower soffit at 2.8 m.',
+                speakers: [ spk('Lounge NW','oc03',5,-3.0,1.9,3.2), spk('Lounge N','oc03',6,-0.8,1.9,3.2), spk('Lounge NE','oc03',7,1.4,1.9,3.2), spk('Lounge W','oc03',8,-3.8,0.3,3.2), spk('Lounge E','oc03',9,2.2,0.3,3.2), spk('Lounge SW','oc03',10,-3.0,-1.5,3.2), spk('Lounge S','oc03',11,-0.8,-1.5,3.2), spk('Lounge SE','oc03',12,1.4,-1.5,3.2), spk('Reception 1','oc03',13,3.8,2.6,3.2), spk('Reception 2','oc03',14,5.6,2.6,3.2), spk('Bar 1','oc03',15,4.0,-1.2,3.2), spk('Bar 2','oc03',16,4.0,-2.9,3.2), spk('Entrance L','oc03',17,-2.2,-3.8,2.8), spk('Entrance R','oc03',18,0.8,-3.8,2.8), spk('Stairs','oc03',19,-5.0,2.8,3.2), spk('Corridor','oc03',20,-5.0,-2.6,3.2) ], resources:[ { name:'lounge-plan.dwg', kind:'file', size:'1.2 MB' }, { name:'ceiling-soffit.jpg', kind:'photo', size:'2.4 MB' } ] },
+    terrace8: { name:'Terrace Line 8',  file:{ name:'terrace-line.json', uploaded:'Sep 12' }, plan:{ src:null, width:16, opacity:.4 }, notes:'',
+                speakers: line(8, 14, -3, 2.4, 'oc04', 1), resources:[] },
+    pool4:    { name:'Pool Bar Quad',   file:{ name:'poolbar-quad.json', uploaded:'Sep 12' }, plan:{ src:null, width:8, opacity:.4 }, notes:'',
+                speakers: quad(3, 2.6, 'oc04', 9), resources:[] },
+    cabana4:  { name:'Cabana Quad',     file:{ name:'cabana-quad.json', uploaded:'Sep 12' }, plan:{ src:null, width:8, opacity:.4 }, notes:'',
+                speakers: quad(2.5, 2.2, 'oc04', 13), resources:[] },
+  },
+  account: {
+    user: { name:'Wyatt Giampa', email:'wyatt@wyldrenaissance.com', role:'owner', initials:'WG' },
+    signin: { method:'cloud', localFallback:true, localOn:'oc01' },
+    org: { name:'Wyld Renaissance', plan:'Pro', seats:5 },
+    sites: [ { id:'oc', name:'Orange County', zones:7, computers:4 }, { id:'marina', name:'Marina Residence', zones:3, computers:1 }, { id:'studio', name:'Studio A', zones:1, computers:1 } ],
+    site: 'oc',
+    license: { key:'SPLM-7F3A-9C21-B2D4-E8A1', zones:8, computers:6, expires:'Mar 14, 2027' },
+    users: [
+      { id:'u1', name:'Wyatt Giampa', email:'wyatt@wyldrenaissance.com', role:'owner',     seen:'now' },
+      { id:'u2', name:'Dana Ortiz',   email:'dana@wyldrenaissance.com',  role:'installer', seen:'Yesterday' },
+      { id:'u3', name:'Sam Keller',   email:'sam.keller@ocvenue.com',    role:'manager',   seen:'Oct 30' },
+      { id:'u4', name:'Front desk',   email:'frontdesk@ocvenue.com',     role:'viewer',    seen:'Nov 2' },
+    ],
+  },
+  settings: {
+    theme:'dark', units:'m', clock:'12', firstTab:'dashboard',
+    alerts: { offline:true, dropouts:true, load:true, loadPct:85, cloud:false, emails:'wyatt@wyldrenaissance.com, dana@wyldrenaissance.com' },
+    updates: { latest:'2.4.2', auto:false, window:'2:00 – 4:00 AM' },
+    backups: [ { t:'Nov 3, 11:10 PM', by:'Automatic', size:'184 KB' }, { t:'Oct 28, 4:32 PM', by:'Wyatt Giampa', size:'181 KB' }, { t:'Oct 12, 9:05 AM', by:'Dana Ortiz', size:'176 KB' } ],
+  },
+  defaults: { multicast:'239.1.2.3', rest:7378, osc:9002 },
+  ptp: { grandmaster:'Netgear M4250 (switch)', domain:0, priority:128 },
+  discovered: [
+    { id:'disc1', name:'M5-OC05', ip:'10.0.1.24', version:'2.4.1', uuid:'A1B2C3D4-0000-4000-8000-000000000005' },
+    { id:'disc2', name:'Mac-mini-lab', ip:'10.0.3.5', version:'2.3.9', uuid:'A1B2C3D4-0000-4000-8000-000000000006' },
+  ],
+  cloud: { connected:true, lastSync:'2:02 PM', down:'22 Mb/s', scenes:118, local:'41 GB' },
+  integrations: [
+    { id:'qsys',     name:'Q-SYS Core',   type:'REST', host:'10.0.1.5',  port:7378, on:true,  zones:['lobby','mezzanine','gallery'], feedback:true },
+    { id:'crestron', name:'Crestron CP4', type:'OSC',  host:'10.0.1.6',  port:9002, on:true,  zones:['deck','poolbar','cabanas'], feedback:false },
+    { id:'josh',     name:'Josh.ai',      type:'REST', host:'10.0.1.40', port:7378, on:false, zones:[], feedback:false },
+  ],
+  local: 'oc01',   // the computer serving this UI; null when the UI is opened remotely
+  events: [
+    { t:'14:19', who:'oc03',    kind:'warn', text:'had three audio dropouts in the last minute' },
+    { t:'13:48', who:'cabanas', kind:'off',  text:'stopped responding' },
+    { t:'13:02', who:'lobby',   kind:'',     text:'started Morning Drift' },
+  ],
+};
+const UI = { sheet:null, filter:'all', tests:[], testTarget:'oc01', testKind:'rest', view:'top', spk:null, tone:null,
+  reach:null, walk:null, diag:null, logFilter:{ computer:'all', level:'all' }, con:{ proto:'rest', target:'oc01', cmd:'', reply:null },
+  logs: [
+    { t:'8:41:02 PM', c:'oc03', l:'warn',  m:'Audio interface dropout (3 in 60 s)' },
+    { t:'8:40:55 PM', c:'oc01', l:'info',  m:'Zone Lobby level 72' },
+    { t:'8:40:12 PM', c:'oc02', l:'debug', m:'PTP offset 11 µs' },
+    { t:'8:39:48 PM', c:'oc04', l:'info',  m:'SPLSensor message /zone/deck/volume 65 from 10.0.1.6' },
+    { t:'8:39:01 PM', c:'oc01', l:'info',  m:'Cloud sync: 0 new scenes' },
+    { t:'8:38:20 PM', c:'oc03', l:'error', m:'Core Audio: buffer underrun on MOTU 16A' },
+    { t:'8:37:44 PM', c:'oc02', l:'info',  m:'REST GET /zones from 10.0.1.5 (Q-SYS)' },
+    { t:'8:36:10 PM', c:'oc04', l:'debug', m:'Heartbeat to Cabanas timed out' },
+  ] };
+const LOG_POOL = [ ['oc01','info','Zone Mezzanine level 58'], ['oc02','debug','PTP offset 9 µs'], ['oc03','warn','Audio interface dropout'], ['oc04','info','Scene Evening Tide loop restarted'], ['oc01','debug','IGMP query answered'], ['oc02','info','REST GET /status from 10.0.1.5'] ];
+
+const TABS = [
+  ['dashboard','Dashboard','<rect x="3" y="3" width="7" height="7" rx="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.8"/>'],
+  ['zones','Zones','<circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/>'],
+  ['computers','Computers','<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'],
+  ['network','Network','<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-5.5 5.5M12 12l5.5 5.5"/>'],
+  ['speakermaps','Speakermaps','<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="14" r="3.2"/><circle cx="12" cy="7.5" r="1.1"/>'],
+  ['account','Account','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
+  ['settings','Settings','<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--void)"/><circle cx="15" cy="12" r="2.2" fill="var(--void)"/><circle cx="8" cy="17" r="2.2" fill="var(--void)"/>'],
+];
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>';
+
+/* ---------- theme / units ---------- */
+function applyTheme(){
+  const t = DATA.settings.theme, light = t==='light' || (t==='auto' && matchMedia('(prefers-color-scheme: light)').matches);
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  try { localStorage.setItem('spl-theme', t); } catch(_){}
+}
+const toUnit  = m => DATA.settings.units==='ft' ? +(m*3.28084).toFixed(1) : m;
+const fromUnit = v => DATA.settings.units==='ft' ? +(v/3.28084).toFixed(1) : +(+v).toFixed(1);
+const unitLabel = () => DATA.settings.units==='ft' ? 'ft' : 'm';
+
+/* ---------- tiny router: #tab or #tab/id ---------- */
+function route(){ const [tab,id] = location.hash.replace('#','').split('/'); return { tab: tab||DATA.settings.firstTab||'dashboard', id }; }
+function go(tab,id){ location.hash = id ? `${tab}/${id}` : tab; }
+addEventListener('hashchange', render);
+
+/* ---------- helpers ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nameOf = id => (DATA.zones[id]||DATA.computers[id]||DATA.speakermaps[id]||{}).name || id;
+const itemOf = z => DATA.library.find(i => i.id===z.content) || null;
+const spaceOfZone = zid => DATA.spaces.find(s => s.zones.includes(zid));
+const stateCls = z => z.status==='degraded' ? 'warn' : z.status==='offline' ? 'off' : (!z.rendering ? 'idle' : '');
+const stateWord = z => z.status==='degraded' ? 'Degraded' : z.status==='offline' ? 'Offline' : (!z.rendering ? 'Idle' : '');
+const ipOf = c => (c.ifaces.find(i => i.id===c.iface) || {}).ip || '—';
+const outputOf = c => DATA.devices[c.device].output;
+const chanOf = c => outputOf(c)==='AES67' ? c.channels : Math.min(c.channels, DATA.devices[c.device].outs);
+const getPath = (o, p) => p.split('.').reduce((a,k) => a[k], o);
+const setPath = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); getPath(o, ks.join('.'))[last] = v; };
+const PAL = ['#94e3ad','#e8bb62','#8fb8e8','#d9a4e0','#e8a58f','#a9d3d9'];
+const colorOf = cid => PAL[Object.keys(DATA.computers).indexOf(cid) % PAL.length];
+const mapUses = m => m.speakers.reduce((u, p) => { (u[p.computer] = u[p.computer] || []).push(p.ch); return u; }, {});
+const db = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' dB';
+
+/* ---------- this computer ---------- */
+function renderLocal(){
+  const el = document.getElementById('local');
+  const id = DATA.local; if (!id) { el.innerHTML = ''; return; }
+  const c = DATA.computers[id], sp = DATA.spaces.find(s => s.id===c.space);
+  const zones = Object.values(DATA.zones).filter(z => z.computers.includes(id) && z.rendering).map(z => z.name);
+  const cls = c.status==='degraded' ? 'warn' : c.status==='offline' ? 'off' : '';
+  const state = c.status==='degraded' ? esc(c.note) : c.status==='offline' ? 'Offline' : '';
+  const fact = (k,v) => `<div class="fact"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+  el.innerHTML = `<section class="me ${cls}">
+    <div>
+      <div class="row"><span class="lbl">This computer</span><h1>${esc(c.name)}</h1><span class="sp">${esc(sp.name)}</span><span class="mark"></span><span class="state">${state}</span></div>
+      <div class="facts">
+        ${fact('Rendering', zones.length ? esc(zones.join(', ')) : 'Nothing')}
+        ${fact('IP address', esc(ipOf(c)))}
+        ${fact('Uptime', esc(c.up))}
+      </div>
+    </div>
+    <div class="me-actions">
+      <button class="act" data-action="logs">Logs</button>
+      <button class="act" data-action="restart">Restart renderer</button>
+      <button class="act open" data-computer="${id}">Open →</button>
+    </div>
+  </section>`;
+}
+
+/* ---------- dashboard ---------- */
+function slotHTML(id){
+  const z = DATA.zones[id], it = itemOf(z);
+  const now = it ? `${esc(it.title)} · ${it.source}` : (z.status==='offline' ? `Last seen ${z.lastSeen}` : 'Nothing playing');
+  return `<button class="slot ${stateCls(z)}" data-zone="${id}">
+    <span class="mark"></span>
+    <span class="name">${esc(z.name)}</span>
+    <span class="now ${it && z.rendering ? '' : 'dim'}">${now}</span>
+    <span class="st">${stateWord(z)}</span>
+    <span class="level"><i style="width:${Math.round(z.level*100)}%"></i></span>
+  </button>`;
+}
+function cpuHTML(id){
+  const c = DATA.computers[id];
+  const cls = c.status==='degraded' ? 'warn' : c.status==='offline' ? 'off' : '';
+  const extra = c.status==='degraded' ? `<span>${c.load}% · ${esc(c.note)}</span>` : '';
+  return `<button class="cpu ${cls}" data-computer="${id}">${esc(c.name)}${extra}</button>`;
+}
+function dashboard(){
+  return `<div class="page">
+    ${DATA.spaces.map(s => `
+      <section class="space">
+        <div class="space-h"><h2>${esc(s.name)}</h2><div class="cpus">${s.computers.map(cpuHTML).join('')}</div></div>
+        <div class="slots">${s.zones.map(slotHTML).join('')}</div>
+      </section>`).join('')}
+    <section class="events">
+      <h2>Recent</h2>
+      <ul>${DATA.events.map(e => `<li><time>${e.t}</time><span><b class="${e.kind}">${esc(nameOf(e.who))}</b> ${esc(e.text)}</span></li>`).join('')}</ul>
+    </section>
+  </div>`;
+}
+
+/* ---------- zones ---------- */
+function zonesPage(id){
+  const sel = DATA.zones[id] ? id : DATA.spaces[0].zones[0];
+  const list = DATA.spaces.map(s => `<h3>${esc(s.name)}</h3>` + s.zones.map(zid => {
+    const z = DATA.zones[zid], it = itemOf(z);
+    const sub = z.status==='offline' ? 'Offline' : (it && z.rendering) ? esc(it.title) : 'Nothing playing';
+    return `<button class="zrow ${stateCls(z)} ${zid===sel?'sel':''}" data-select="${zid}"><span class="mark"></span><span class="name">${esc(z.name)}</span><span class="sub">${sub}</span></button>`;
+  }).join('')).join('');
+  return `<div class="page zones"><aside class="zlist">${list}</aside><section class="zdetail ${stateCls(DATA.zones[sel])}">${zoneDetail(sel)}</section></div>`;
+}
+function zoneDetail(zid){
+  const z = DATA.zones[zid], sp = spaceOfZone(zid), it = itemOf(z);
+  const playing = z.rendering && it, offline = z.status==='offline';
+  const opt = (v, label, cur) => `<option value="${v}" ${v===cur?'selected':''}>${esc(label)}</option>`;
+  const cpuChips = z.computers.map(cid => { const c = DATA.computers[cid];
+    return `<button class="cpuline ${c.status==='degraded'?'warn':c.status==='offline'?'off':''}" data-computer="${cid}"><span class="mark"></span><span class="n">${esc(c.name)}</span><span class="ch">${chanOf(c)} channels · ${esc(outputOf(c))}</span></button>`; }).join('');
+  return `
+    <div class="zh"><h2>${esc(z.name)}</h2><span class="sp">${esc(sp.name)}</span><span class="mark"></span><span class="state">${stateWord(z)}</span></div>
+
+    <div class="player">
+      <button class="play ${playing?'on':''}" data-play="${zid}" ${offline?'disabled':''} title="${playing?'Stop':'Play'}">${playing?ICON_STOP:ICON_PLAY}</button>
+      <div class="np">
+        <div class="k">${playing ? 'Now playing' : it ? 'Loaded' : 'Scene'}</div>
+        <div class="t ${it?'':'dim'}">${it ? esc(it.title) : 'No scene loaded'}</div>
+        <div class="s">${it ? `${it.source} · ${it.dur}` : ''}</div>
+      </div>
+      <button class="act" data-pick="${zid}" ${offline?'disabled':''}>Load Scene</button>
+    </div>
+
+    <div class="vol">
+      <span class="k">Volume</span>
+      <input type="range" min="0" max="100" value="${z.volume}" style="--p:${z.volume}%" data-vol="${zid}" ${offline?'disabled':''}>
+      <span class="v" id="vol-v">${z.volume}</span>
+    </div>
+
+    <div class="settings">
+      <div class="srow"><span class="k">Name</span><span class="v"><input class="field" value="${esc(z.name)}" data-name="${zid}"></span><span></span></div>
+      <div class="srow"><span class="k">Space</span><span class="v">${esc(sp.name)}</span><span></span></div>
+      <div class="srow"><span class="k">Computers</span><span class="v cpulist">${cpuChips || '<span style="color:var(--ink-3)">None</span>'}</span><button class="go" data-edit-computers="${zid}">Edit</button></div>
+      <div class="srow"><span class="k">Start playing at boot</span><span class="v nowrap"><button class="toggle ${z.boot.on?'on':''}" role="switch" aria-checked="${z.boot.on}" data-ztoggle="${zid}.boot.on"><i></i></button>${z.boot.on
+          ? `<select class="field mid" data-zset="${zid}.boot.mode">${opt('last','Last scene',z.boot.mode)}${opt('scene','A scene',z.boot.mode)}${opt('list','A list',z.boot.mode)}</select>`
+            + (z.boot.mode==='scene' ? `<select class="field mid" data-zset="${zid}.boot.scene">${opt('', 'Choose a scene…', z.boot.scene||'')}${DATA.library.map(i => opt(i.id, i.title, z.boot.scene)).join('')}</select>` : '')
+            + (z.boot.mode==='list'  ? `<select class="field mid" data-zset="${zid}.boot.list">${opt('', 'Choose a list…', z.boot.list||'')}${Object.entries(DATA.lists).map(([k,v]) => opt(k, v, z.boot.list)).join('')}</select>` : '')
+          : '<span class="hint">Stays idle after a restart</span>'}</span><span></span></div>
+      <div class="srow"><span class="k">Speaker map</span><span class="v"><button class="name-link" data-go="speakermaps/${z.map}">${esc(DATA.speakermaps[z.map].name)}</button></span><button class="go" data-change-map="${zid}">Change</button></div>
+    </div>
+
+    <div class="notes">
+      <span class="k">Notes</span>
+      <textarea class="notes-field" data-notes="${zid}" placeholder="Notes for installers: wiring, rack locations, quirks…">${esc(z.notes||'')}</textarea>
+    </div>`;
+}
+
+/* ---------- computers ---------- */
+function computersPage(id){
+  const sel = DATA.computers[id] ? id : DATA.spaces[0].computers[0];
+  const list = DATA.spaces.map(s => `<h3>${esc(s.name)}</h3>` + s.computers.map(cid => {
+    const c = DATA.computers[cid];
+    const zones = Object.values(DATA.zones).filter(z => z.computers.includes(cid)).length;
+    const sub = c.status==='degraded' ? esc(c.note) : c.status==='offline' ? 'Offline' : `${c.load}% load · ${zones} zone${zones===1?'':'s'}`;
+    const cls = c.status==='degraded' ? 'warn' : c.status==='offline' ? 'off' : '';
+    return `<button class="zrow ${cls} ${cid===sel?'sel':''}" data-select-computer="${cid}"><span class="mark"></span><span class="name">${esc(c.name)}${cid===DATA.local?' <span class="tag">This computer</span>':''}</span><span class="sub">${sub}</span></button>`;
+  }).join('')).join('');
+  const c = DATA.computers[sel], cls = c.status==='degraded' ? 'warn' : c.status==='offline' ? 'off' : '';
+  return `<div class="page zones"><aside class="zlist">${list}</aside><section class="zdetail ${cls}">${computerDetail(sel)}</section></div>`;
+}
+function computerDetail(id){
+  const c = DATA.computers[id], sp = DATA.spaces.find(s => s.id===c.space), out = outputOf(c), aes = out==='AES67';
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(label)}</option>`;
+  const toggle = (path, on) => `<button class="toggle ${on?'on':''}" role="switch" aria-checked="${on}" data-toggle="${path}"><i></i></button>`;
+  const row = (k, v, right='') => `<div class="srow"><span class="k">${k}</span><span class="v">${v}</span><span>${right}</span></div>`;
+  const stepper = (path, val, enabled) => enabled
+    ? `<select class="field num" data-set="${path}" data-kind="int">${[8,16,24,32,40,48,56,64].map(n => opt(n, n, val)).join('')}</select>`
+    : `<span>${val}</span><span class="hint">fixed by ${esc(c.device)}</span>`;
+  const state = c.status==='degraded' ? 'Degraded' : c.status==='offline' ? 'Offline' : '';
+  const ranges = a => { const r = []; a.slice().sort((x,y)=>x-y).forEach(n => { const l = r[r.length-1]; if (l && n === l[1] + 1) l[1] = n; else r.push([n,n]); }); return r.map(([a,b]) => a===b ? a : `${a}–${b}`).join(', '); };
+  const usedBy = Object.entries(DATA.zones).map(([zid,z]) => [zid, z, DATA.speakermaps[z.map]]).filter(([,,m]) => mapUses(m)[id]).map(([zid,z,m]) => [zid, z, m, ranges(mapUses(m)[id])]);
+  return `
+    <div class="zh"><h2>${esc(c.name)}</h2><span class="sp">${esc(sp.name)}</span><span class="mark"></span><span class="state">${state}</span>${id===DATA.local?'<span class="tag">This computer</span>':''}</div>
+
+    <div class="cfacts">
+      <div class="fact"><span class="k">Load</span><span class="v ${c.load>=80?'warn':''}">${c.load}%</span></div>
+      <div class="fact"><span class="k">Uptime</span><span class="v">${esc(c.up)}</span></div>
+      <div class="fact"><span class="k">Renderer</span><span class="v">${esc(c.version)}</span></div>
+      <div class="fact"><span class="k">Model</span><span class="v">${esc(c.model)} · ${esc(c.os)}</span></div>
+      <div class="cactions"><button class="act" data-logs="${id}">Logs</button><button class="act" data-proc="${id}.renderer">Restart renderer</button></div>
+    </div>
+
+    <h3 class="sec-h">Identity</h3>
+    ${row('Name', `<input class="field" value="${esc(c.name)}" data-set="${id}.name" data-kind="name">`)}
+    ${row('UUID', `<span class="mono" style="color:var(--ink-2);font-size:14px">${c.uuid}</span>`, `<button class="go" data-copy="${c.uuid}">Copy</button>`)}
+
+    <h3 class="sec-h">Mac permissions</h3>
+    ${row('Energy', `${toggle(`${id}.perms.energy`, c.perms.energy)}<span class="hint">${c.perms.energy ? 'Sleep is prevented while rendering' : 'Not granted. The Mac may sleep.'}</span>`)}
+    ${row('Start at login', `${toggle(`${id}.perms.login`, c.perms.login)}<span class="hint">${c.perms.login ? 'Renderer launches with the Mac' : 'Not granted'}</span>`)}
+
+    <h3 class="sec-h">Network</h3>
+    ${row('Interface', `<select class="field" data-set="${id}.iface">${c.ifaces.map(i => opt(i.id, `${i.label} (${i.id})${i.ip?' · '+i.ip:' · no address'}`, c.iface)).join('')}</select>`)}
+    ${row('IP address', `<span class="mono">${ipOf(c)}</span>`)}
+    ${row('Multicast group', `<input class="field short mono" value="${c.multicast}" data-set="${id}.multicast" data-kind="ip" inputmode="numeric" placeholder="239.0.0.0">`)}
+
+    <h3 class="sec-h">Audio interface</h3>
+    ${row('Device', `<select class="field" data-set="${id}.device">${Object.keys(DATA.devices).map(d => opt(d, d, c.device)).join('')}</select><span class="hint">${esc(out)}</span>`)}
+    ${row('Output channels', stepper(`${id}.channels`, chanOf(c), aes))}
+    ${aes ? row('Stream name', `<input class="field" value="${esc(c.aes67.stream)}" data-set="${id}.aes67.stream">`) : ''}
+    ${aes ? row('Output device', `<select class="field" data-set="${id}.aes67.outDev">${c.ifaces.map(i => opt(i.id, `${i.label} (${i.id})`, c.aes67.outDev)).join('')}</select>`) : ''}
+    ${aes ? row('Stream IP', `<input class="field short mono" value="${c.aes67.ip}" data-set="${id}.aes67.ip" data-kind="ip" inputmode="numeric">`) : ''}
+    ${aes ? row('IGMP querier', `${toggle(`${id}.aes67.igmp`, c.aes67.igmp)}<span class="hint">${c.aes67.igmp ? 'This computer answers IGMP queries' : 'Off'}</span>`) : ''}
+
+    <h3 class="sec-h">Input streaming</h3>
+    ${row('Enabled', toggle(`${id}.input.enabled`, c.input.enabled))}
+    ${c.input.enabled ? row('Input device', `<select class="field" data-set="${id}.input.device">${Object.keys(DATA.devices).map(d => opt(d, d, c.input.device)).join('')}</select>`) : ''}
+    ${c.input.enabled ? row('Input channels', stepper(`${id}.input.channels`, c.input.channels, true)) : ''}
+    ${c.input.enabled && DATA.devices[c.input.device].output==='AES67' ? row('Stream IP', `<input class="field short mono" value="${c.input.ip}" data-set="${id}.input.ip" data-kind="ip" inputmode="numeric">`) : ''}
+
+    <h3 class="sec-h">Channels</h3>
+    ${row('Exposed', `${chanOf(c)} channels through ${esc(c.device)}`)}
+    <p class="hint" style="margin:12px 0 2px;max-width:560px">What each channel physically reaches is set outside this app, for example in Dante Controller. Speaker maps then place this computer's channels at positions in a zone.</p>
+    ${row('Used by', usedBy.length ? `<span class="cpulist" style="padding:0">${usedBy.map(([zid,z,m,chs]) => `<button class="cpuline ${stateCls(z)}" data-zone="${zid}"><span class="mark"></span><span class="n">${esc(z.name)}</span><span class="ch">${esc(m.name)} · ch ${chs}</span></button>`).join('')}</span>` : '<span class="hint">No speaker map uses this computer yet</span>')}
+
+    <h3 class="sec-h">Background processes</h3>
+    ${row('Renderer engine', `${toggle(`${id}.procs.renderer.on`, c.procs.renderer.on)}<span class="hint">${c.procs.renderer.on ? 'Runs whenever the system is up' : 'Off. Nothing renders on this computer.'}</span>`)}
+    ${row('REST server', `${toggle(`${id}.procs.rest.on`, c.procs.rest.on)}<span class="hint">Port</span><input class="field num mono" value="${c.procs.rest.port}" data-set="${id}.procs.rest.port" data-kind="port" inputmode="numeric" ${c.procs.rest.on?'':'disabled'}>`)}
+    ${row('SPLSensor (OSC)', `${toggle(`${id}.procs.osc.on`, c.procs.osc.on)}<span class="hint">Port</span><input class="field num mono" value="${c.procs.osc.port}" data-set="${id}.procs.osc.port" data-kind="port" inputmode="numeric" ${c.procs.osc.on?'':'disabled'}>`)}
+
+    <h3 class="sec-h">Logging</h3>
+    ${row('Level', `<select class="field" data-set="${id}.log">${['Error','Warning','Info','Debug'].map(l => opt(l, l, c.log)).join('')}</select>`, `<button class="go" data-logs="${id}">Open logs</button>`)}
+
+    <div class="notes">
+      <span class="k">Notes</span>
+      <textarea class="notes-field" data-set="${id}.notes" data-kind="notes" placeholder="Notes for installers: rack position, cabling, quirks…">${esc(c.notes||'')}</textarea>
+    </div>`;
+}
+
+/* ---------- network ---------- */
+function networkPage(){
+  const spaceOf = c => DATA.spaces.find(sp => sp.id===c.space);
+  const row = (k, v, right='') => `<div class="srow"><span class="k">${k}</span><span class="v">${v}</span><span>${right}</span></div>`;
+  const toggle = (path, on) => `<button class="toggle ${on?'on':''}" role="switch" aria-checked="${on}" data-root-toggle="${path}"><i></i></button>`;
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(label)}</option>`;
+  // consistency: compare each computer with the majority in its Space
+  const issues = [];
+  const majority = (arr) => arr.sort((a,b) => arr.filter(x=>x===b).length - arr.filter(x=>x===a).length)[0];
+  DATA.spaces.forEach(sp => {
+    const cs = sp.computers.map(id => DATA.computers[id]);
+    const mc = majority(cs.map(c => c.multicast)), rp = majority(cs.map(c => c.procs.rest.port)), op = majority(cs.map(c => c.procs.osc.port));
+    cs.forEach(c => {
+      if (c.multicast !== mc) issues.push({ c, kind:'multicast', text:`${c.name} is on ${c.multicast}; the rest of ${sp.name} is on ${mc}` });
+      if (c.procs.rest.port !== rp) issues.push({ c, kind:'rest', text:`${c.name} REST port ${c.procs.rest.port} differs from ${sp.name} (${rp})` });
+      if (c.procs.osc.port !== op) issues.push({ c, kind:'osc', text:`${c.name} SPLSensor port ${c.procs.osc.port} differs from ${sp.name} (${op})` });
+      if (c.ptp.state !== 'locked') issues.push({ c, kind:'ptp', text:`${c.name} is not locked to the PTP grandmaster` });
+    });
+  });
+  const flag = (c, kind) => issues.some(i => i.c===c && i.kind===kind) ? 'warnv' : '';
+  const rows = Object.entries(DATA.computers).map(([id,c]) => {
+    const ifc = c.ifaces.find(i => i.id===c.iface) || {};
+    return `<button class="nrow" data-computer="${id}">
+      <span class="n"><span class="mark ${c.status==='degraded'?'warn':c.status==='offline'?'off':''}" style="${c.status==='degraded'?'background:var(--warn)':c.status==='offline'?'background:var(--off)':''}"></span>${esc(c.name)}</span>
+      <span>${esc(spaceOf(c).name)}</span>
+      <span>${esc(ifc.label||'')} · ${esc(ifc.ip||'no address')}</span>
+      <span class="mono ${flag(c,'multicast')}">${c.multicast}</span>
+      <span class="mono ${flag(c,'rest')}">${c.procs.rest.on ? c.procs.rest.port : '<span class="hint">off</span>'}</span>
+      <span class="mono ${flag(c,'osc')}">${c.procs.osc.on ? c.procs.osc.port : '<span class="hint">off</span>'}</span>
+      <span class="${c.ptp.state==='locked'?'':'warnv'}">${c.ptp.state==='locked' ? `Locked · ${c.ptp.offset}` : 'Unlocked'}</span>
+    </button>`; }).join('');
+  const disc = DATA.discovered.length ? DATA.discovered.map(d => `<div class="drow"><span class="n">${esc(d.name)}</span><span class="mono">${d.ip}</span><span>Renderer ${esc(d.version)}</span>
+      <select class="field mid" data-disc-space="${d.id}">${DATA.spaces.map(sp => opt(sp.id, sp.name, '')).join('')}</select><button class="act" data-disc-add="${d.id}">Add</button></div>`).join('')
+    : '<p class="hint" style="padding:14px 0">Nothing new on the network.</p>';
+  const ints = DATA.integrations.map(i => `<div class="irow ${i.on?'':'offi'}"><button class="n" data-int-edit="${i.id}">${esc(i.name)}</button><span>${i.type}</span><span class="mono">${i.host}:${i.port}</span>
+      <span class="hint" style="white-space:nowrap">${i.zones.length ? (i.zones.length===Object.keys(DATA.zones).length ? 'All zones' : i.zones.map(z => DATA.zones[z]?.name).filter(Boolean).join(', ')) : 'No zones'}</span>
+      ${toggle(`integrations.${DATA.integrations.indexOf(i)}.on`, i.on)}<button class="go" data-int-test="${i.id}" ${i.on?'':'disabled'}>Test</button></div>`).join('');
+  const tests = UI.tests.map(t => `<li><span>${t.t}</span><span><b>${esc(t.target)}</b> · ${esc(t.kind)} · <span class="${t.ok?'ok':'bad'}">${esc(t.result)}</span></span></li>`).join('');
+  return `<div class="page net">
+    <h3 class="sec-h">Computers</h3>
+    <div class="nhead"><span>Computer</span><span>Space</span><span>Interface</span><span>Multicast</span><span>REST</span><span>SPLSensor</span><span>Clock</span></div>
+    ${rows}
+    ${issues.length ? `<ul class="issues">${issues.map(i => `<li>${esc(i.text)}</li>`).join('')}</ul>` : '<p class="hint" style="padding-top:12px">All computers agree on multicast, ports and clock.</p>'}
+
+    <h3 class="sec-h">Clocking</h3>
+    ${row('Grandmaster', `${esc(DATA.ptp.grandmaster)}<span class="hint">domain ${DATA.ptp.domain} · priority ${DATA.ptp.priority}</span>`)}
+    ${row('Locked', `${Object.values(DATA.computers).filter(c => c.ptp.state==='locked').length} of ${Object.keys(DATA.computers).length} computers`)}
+
+    <h3 class="sec-h"><span>Discovery</span><button class="go" data-add-ip>Add by IP…</button></h3>
+    ${disc}
+
+    <h3 class="sec-h"><span>Site defaults</span><button class="go" data-apply-defaults>Apply to all computers</button></h3>
+    ${row('Multicast group', `<input class="field short mono" value="${DATA.defaults.multicast}" data-root="defaults.multicast" data-kind="ip" inputmode="numeric">`)}
+    ${row('REST port', `<input class="field num mono" value="${DATA.defaults.rest}" data-root="defaults.rest" data-kind="port" inputmode="numeric">`)}
+    ${row('SPLSensor port', `<input class="field num mono" value="${DATA.defaults.osc}" data-root="defaults.osc" data-kind="port" inputmode="numeric">`)}
+
+    <h3 class="sec-h"><span>Cloud</span><button class="go" data-sync>Sync now</button></h3>
+    ${row('Connection', `<span class="mark"></span>${DATA.cloud.connected ? 'Connected' : 'Unreachable'}<span class="hint">${DATA.cloud.down} down</span>`)}
+    ${row('Last sync', DATA.cloud.lastSync)}
+    ${row('Library', `${DATA.cloud.scenes} scenes<span class="hint">${DATA.cloud.local} stored locally</span>`)}
+
+    <h3 class="sec-h"><span>Integrations</span><button class="go" data-add-int>Add integration…</button></h3>
+    ${ints}
+
+    <h3 class="sec-h">Connection test</h3>
+    <div class="srow"><span class="k">Test</span><span class="v nowrap">
+      <select class="field mid" data-ui="testTarget">${Object.entries(DATA.computers).map(([id,c]) => opt(id, c.name, UI.testTarget)).join('')}</select>
+      <select class="field mid" data-ui="testKind">${opt('ping','Ping',UI.testKind)}${opt('rest','REST server',UI.testKind)}${opt('osc','SPLSensor',UI.testKind)}${opt('mcast','Multicast',UI.testKind)}</select>
+      <button class="act" data-run-test>Run</button></span><span></span></div>
+    ${tests ? `<ul class="tests">${tests}</ul>` : ''}
+  </div>`;
+}
+
+/* ---------- speaker maps ---------- */
+function speakermapsPage(id){
+  const ids = Object.keys(DATA.speakermaps), sel = DATA.speakermaps[id] ? id : ids[0];
+  const zoneFor = mid => Object.entries(DATA.zones).find(([,z]) => z.map===mid);
+  const groups = DATA.spaces.map(sp => [sp.name, ids.filter(mid => sp.zones.some(z => DATA.zones[z].map===mid))]);
+  const loose = ids.filter(mid => !zoneFor(mid)); if (loose.length) groups.push(['Not assigned', loose]);
+  const list = groups.filter(([,g]) => g.length).map(([name, g]) => `<h3>${esc(name)}</h3>` + g.map(mid => { const m = DATA.speakermaps[mid], ze = zoneFor(mid);
+    return `<button class="zrow nomark ${mid===sel?'sel':''}" data-select-map="${mid}"><span class="name">${esc(m.name)}</span><span class="sub">${m.speakers.length} speakers${ze ? ' · ' + esc(ze[1].name) : ''}</span></button>`; }).join('')).join('');
+  return `<div class="page zones maps"><aside class="zlist">${list}<button class="go" style="margin:18px 0 0 14px" data-map-new>Upload a speaker map…</button><input type="file" id="mapfile-new" accept=".json,.xml,.csv,.txt,.spk" hidden></aside><section class="zdetail">${sel ? mapDetail(sel) : '<p class="hint">No speaker maps yet.</p>'}</section></div>`;
+}
+function mapDetail(mid){
+  const m = DATA.speakermaps[mid], ze = Object.entries(DATA.zones).find(([,z]) => z.map===mid);
+  const sp = ze ? spaceOfZone(ze[0]) : null, cpuIds = sp ? sp.computers : Object.keys(DATA.computers);
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(label)}</option>`;
+  const used = mapUses(m);
+  const rows = m.speakers.map((p, i) => `<div class="sprow ${UI.spk===p.id?'sel':''}" data-spk-row="${p.id}">
+      <span class="dot" style="background:${colorOf(p.computer)}"></span>
+      <input class="field" value="${esc(p.label)}" data-spk="${mid}.${i}.label">
+      <select class="field" data-spk="${mid}.${i}.computer">${cpuIds.map(c => opt(c, DATA.computers[c].name, p.computer)).join('')}</select>
+      <select class="field num" data-spk="${mid}.${i}.ch" data-kind="int">${Array.from({length:chanOf(DATA.computers[p.computer])}, (_, k) => opt(k+1, k+1, p.ch)).join('')}</select>
+      <input class="field num mono" value="${toUnit(p.x)}" data-spk="${mid}.${i}.x" data-kind="len" inputmode="decimal">
+      <input class="field num mono" value="${toUnit(p.y)}" data-spk="${mid}.${i}.y" data-kind="len" inputmode="decimal">
+      <input class="field num mono" value="${toUnit(p.z)}" data-spk="${mid}.${i}.z" data-kind="len" inputmode="decimal">
+      <input class="field num mono" value="${p.db}" data-spk="${mid}.${i}.db" data-kind="num" inputmode="decimal">
+      <button class="tone ${UI.tone===p.id?'on':''}" data-tone="${mid}.${p.id}" title="Test tone">${UI.tone===p.id?'■':'▶'}</button>
+      <button class="x" data-spk-remove="${mid}.${i}" title="Remove">×</button></div>`).join('');
+  return `
+    <div class="zh"><input class="field title" value="${esc(m.name)}" data-mset="${mid}.name">${ze ? `<button class="name-link sp" data-zone="${ze[0]}">${esc(ze[1].name)}</button>` : '<span class="hint">Not assigned to a zone</span>'}</div>
+    <div class="cfacts">
+      <div class="fact"><span class="k">Speakers</span><span class="v">${m.speakers.length}</span></div>
+      <div class="fact"><span class="k">Computers</span><span class="v">${Object.keys(used).map(c => `<span style="color:${colorOf(c)}">●</span> ${esc(DATA.computers[c].name)}`).join('&nbsp;&nbsp; ') || '—'}</span></div>
+      <div class="fact"><span class="k">File</span><span class="v">${esc(m.file.name)} · ${esc(m.file.uploaded)}</span></div>
+      <div class="cactions"><button class="act" data-map-replace="${mid}">Upload new version</button><button class="act" data-map-download="${mid}">Download</button><button class="go" data-map-delete="${mid}">Delete</button></div>
+      <input type="file" id="mapfile-replace" accept=".json,.xml,.csv,.txt,.spk" hidden><input type="file" id="planfile" accept="image/*" hidden><input type="file" id="resfile" hidden>
+    </div>
+
+    <div class="ctools">
+      <span class="seg"><button class="${UI.view==='top'?'on':''}" data-view="top">Top</button><button class="${UI.view==='3d'?'on':''}" data-view="3d">3D</button></span>
+      ${m.plan.src
+        ? `<span class="hint">Plan width</span><input class="field num mono" value="${m.plan.width}" data-mset="${mid}.plan.width" data-kind="num" inputmode="decimal"><span class="hint">m</span>
+           <input type="range" min="10" max="90" value="${Math.round(m.plan.opacity*100)}" style="width:110px;--p:${Math.round(m.plan.opacity*100)}%" data-plan-opacity="${mid}">
+           <button class="go" data-plan-remove="${mid}">Remove plan</button>`
+        : `<button class="go" data-plan-add>Add floor plan…</button>`}
+      <span class="hint" style="margin-left:auto">${UI.tone ? 'Tone playing' : UI.view==='top' ? 'Drag a speaker to move it' : 'Switch to Top to move speakers'}</span>
+    </div>
+    <div class="canvas" id="canvas">${mapSVG(m)}</div>
+
+    <div class="sphead"><span></span><span>Label</span><span>Computer</span><span>Ch</span><span>X ${unitLabel()}</span><span>Y ${unitLabel()}</span><span>Z ${unitLabel()}</span><span>Vol dB</span><span>Tone</span><span></span></div>
+    ${rows}
+    <div style="padding:12px 6px"><button class="go" data-spk-add="${mid}">Add speaker</button></div>
+
+    <h3 class="sec-h"><span>Resources</span><button class="go" data-res-add>Add photo or file…</button></h3>
+    <div class="res">${m.resources.map((r, i) => `<div class="resitem"><span class="thumb ${r.kind}">${r.kind==='photo'?'':'FILE'}</span><span>${esc(r.name)}</span><span class="hint">${esc(r.size)}</span></div>`).join('') || '<p class="hint">Photos and documents for installers: rack shots, wiring, plans.</p>'}</div>
+
+    <div class="notes">
+      <span class="k">Notes</span>
+      <textarea class="notes-field" data-mset="${mid}.notes" data-kind="notes" placeholder="Notes for installers…">${esc(m.notes||'')}</textarea>
+    </div>`;
+}
+function mapSVG(m){
+  const pts = m.speakers;
+  const ext = Math.max(4, ...pts.map(p => Math.max(Math.abs(p.x), Math.abs(p.y))), m.plan.src ? m.plan.width/2 : 0, m.plan.src ? m.plan.width/(m.plan.ratio||1)/2 : 0) + 1.2;
+  const W = ext*2, H = W*10/16;
+  const grid = [];
+  if (UI.view==='top') {
+    for (let g = -Math.floor(ext); g <= ext; g++) grid.push(`<line x1="${g}" y1="${-H/2}" x2="${g}" y2="${H/2}" stroke="${g===0?'rgba(164,184,171,.25)':'rgba(164,184,171,.07)'}" stroke-width="0.02"/><line x1="${-ext}" y1="${g}" x2="${ext}" y2="${g}" stroke="${g===0?'rgba(164,184,171,.25)':'rgba(164,184,171,.07)'}" stroke-width="0.02"/>`);
+    const plan = m.plan.src ? (() => { const IW = 2000, ratio = m.plan.ratio || 1, IH = IW/ratio, w = m.plan.width, h = w/ratio;
+      return `<g transform="translate(${-w/2},${-h/2}) scale(${w/IW})"><image href="${m.plan.src}" width="${IW}" height="${IH}" preserveAspectRatio="none" opacity="${m.plan.opacity}"/></g>`; })() : '';
+    const dots = pts.map(p => `<g class="spk ${UI.spk===p.id?'sel':''}" data-spk-id="${p.id}" transform="translate(${p.x},${-p.y})"><title>${esc(p.label)} · ${esc(DATA.computers[p.computer].name)} ch ${p.ch} · z ${p.z} m</title><circle r="0.3" fill="${colorOf(p.computer)}"/><text y="0.11" text-anchor="middle" font-size="0.3">${p.ch}</text></g>`).join('');
+    return `<svg viewBox="${-ext} ${-H/2} ${W} ${H}" data-top>${plan}${grid.join('')}<text x="${-ext+0.3}" y="${-H/2+0.5}" font-size="0.32" fill="rgba(164,184,171,.5)">1 m grid · ${pts.length} speakers</text>${dots}</svg>`;
+  }
+  // 3D: isometric projection of floor grid and speakers with a drop line to the floor
+  const iso = (x, y, z) => [ (x - y) * 0.866, (x + y) * 0.5 - z ];
+  const zmax = Math.max(3, ...pts.map(p => p.z));
+  for (let g = -Math.floor(ext); g <= ext; g++) {
+    const a = iso(g, -ext, 0), b = iso(g, ext, 0), c = iso(-ext, g, 0), d = iso(ext, g, 0);
+    const col = g===0 ? 'rgba(164,184,171,.25)' : 'rgba(164,184,171,.07)';
+    grid.push(`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width="0.02"/><line x1="${c[0]}" y1="${c[1]}" x2="${d[0]}" y2="${d[1]}" stroke="${col}" stroke-width="0.02"/>`);
+  }
+  const sorted = pts.slice().sort((a,b) => (a.x + a.y) - (b.x + b.y));
+  const dots = sorted.map(p => { const [sx, sy] = iso(p.x, p.y, p.z), [fx, fy] = iso(p.x, p.y, 0);
+    return `<g class="spk ${UI.spk===p.id?'sel':''}" data-spk-id="${p.id}"><title>${esc(p.label)} · z ${p.z} m</title><line x1="${fx}" y1="${fy}" x2="${sx}" y2="${sy}" stroke="${colorOf(p.computer)}" stroke-opacity=".35" stroke-width="0.03"/><circle cx="${fx}" cy="${fy}" r="0.08" fill="${colorOf(p.computer)}" opacity=".5"/><circle cx="${sx}" cy="${sy}" r="0.3" fill="${colorOf(p.computer)}"/><text x="${sx}" y="${sy+0.11}" text-anchor="middle" font-size="0.3">${p.ch}</text></g>`; }).join('');
+  const vw = ext*2*0.866*2, vh = ext*2 + zmax + 1;
+  return `<svg viewBox="${-vw/2} ${-ext - zmax - 0.5} ${vw} ${vh}">${grid.join('')}<text x="${-vw/2+0.3}" y="${-ext - zmax}" font-size="0.32" fill="rgba(164,184,171,.5)">isometric · height shown as drop lines</text>${dots}</svg>`;
+}
+function bindCanvas(){
+  const svg = document.querySelector('#canvas svg[data-top]'); if (!svg) return;
+  let drag = null;
+  const toUser = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  svg.addEventListener('pointerdown', e => {
+    const g = e.target.closest('.spk'); if (!g) return;
+    const r = route(), m = DATA.speakermaps[r.id] || DATA.speakermaps[Object.keys(DATA.speakermaps)[0]];
+    const p = m.speakers.find(x => x.id===g.dataset.spkId); if (!p) return;
+    const u = toUser(e); drag = { g, p, dx: p.x - u.x, dy: -p.y - u.y, moved:false, x0:e.clientX, y0:e.clientY };
+    svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener('pointermove', e => {
+    if (!drag) return; const u = toUser(e);
+    if (Math.abs(e.clientX - drag.x0) + Math.abs(e.clientY - drag.y0) > 3) drag.moved = true;
+    drag.p.x = +(u.x + drag.dx).toFixed(1); drag.p.y = +(-(u.y + drag.dy)).toFixed(1);
+    drag.g.setAttribute('transform', `translate(${drag.p.x},${-drag.p.y})`);
+  });
+  svg.addEventListener('pointerup', e => { if (!drag) return; UI.spk = drag.p.id; drag = null; render(); });
+}
+
+/* ---------- account ---------- */
+const ROLES = { owner:'Owner', installer:'Installer', manager:'Manager', viewer:'Viewer' };
+const ROLE_NOTE = { owner:'Everything, including users and license', installer:'All settings, no user management', manager:'Playback, scenes and volume', viewer:'Read-only' };
+function accountPage(){
+  const a = DATA.account, site = a.sites.find(x => x.id===a.site);
+  const row = (k, v, right='') => `<div class="srow"><span class="k">${k}</span><span class="v">${v}</span><span>${right}</span></div>`;
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${v===cur?'selected':''}>${esc(label)}</option>`;
+  const used = { zones: Object.keys(DATA.zones).length, computers: Object.keys(DATA.computers).length };
+  const usage = (n, max) => `<span class="bar ${n > max ? 'warn' : ''}"><i style="width:${Math.min(100, n/max*100)}%"></i></span>${n} of ${max}`;
+  const users = a.users.map(u => `<div class="urow"><span class="n">${esc(u.name)}</span><span>${esc(u.email)}</span>
+      ${u.role==='owner' && u.id==='u1' ? `<span>${ROLES[u.role]}</span>` : `<select class="field" data-role="${u.id}">${Object.entries(ROLES).map(([k,v]) => opt(k, v, u.role)).join('')}</select>`}
+      <span class="hint">${esc(u.seen)}</span>${u.id==='u1' ? '<span></span>' : `<button class="go" data-user-remove="${u.id}">Remove</button>`}</div>`).join('');
+  return `<div class="page net">
+    <div class="who"><div class="avatar">${esc(a.user.initials)}</div><div><div class="n">${esc(a.user.name)}</div><div class="s">${esc(a.user.email)} · ${ROLES[a.user.role]} at ${esc(site.name)}</div></div>
+      <div class="cactions"><button class="act" data-change-pw>Change password</button><button class="act" data-signout>Sign out</button></div></div>
+
+    <h3 class="sec-h">Sign-in</h3>
+    ${row('Method', `${a.signin.method==='cloud' ? 'Cloud account' : 'Local credentials'}<span class="hint">${a.signin.method==='cloud' ? 'Works remotely and on site' : 'This site only'}</span>`)}
+    ${row('Offline fallback', a.signin.localFallback ? `<span class="mark"></span>Local password set on ${esc(DATA.computers[a.signin.localOn].name)}<span class="hint">Used when the cloud is unreachable</span>` : '<span class="hint">Not set up. You could be locked out if the cloud is unreachable.</span>', `<button class="go" data-local-pw>${a.signin.localFallback ? 'Change' : 'Set up'}</button>`)}
+
+    <h3 class="sec-h"><span>Cloud account</span><button class="go" data-cloud-manage>Manage in cloud →</button></h3>
+    ${row('Organization', esc(a.org.name))}
+    ${row('Plan', `${esc(a.org.plan)}<span class="hint">${a.org.seats} user seats</span>`)}
+    ${row('Library access', `${DATA.cloud.scenes} scenes<span class="hint">${DATA.cloud.connected ? 'Connected' : 'Unreachable'} · last sync ${esc(DATA.cloud.lastSync)}</span>`, `<button class="go" data-go="network">Network →</button>`)}
+
+    <h3 class="sec-h"><span>Sites</span><button class="go" data-site-add>Add a site…</button></h3>
+    ${a.sites.map(st => `<div class="srow"><span class="n">${esc(st.name)}</span><span class="v hint">${st.zones} zones · ${st.computers} computers</span>${st.id===a.site ? '<span class="tag">Current</span>' : `<button class="go" data-site-switch="${st.id}">Switch</button>`}</div>`).join('')}
+
+    <h3 class="sec-h"><span>License</span><span><button class="go" data-copy="${a.license.key}">Copy key</button>&nbsp;&nbsp;<button class="go" data-renew>Renew…</button></span></h3>
+    ${row('Key', `<span class="mono lic">${a.license.key.replace(/^(\w{4}-\w{4})-.*-(\w{4})$/, '$1-····-····-$2')}</span>`)}
+    ${row('Zones', usage(used.zones, a.license.zones))}
+    ${row('Computers', usage(used.computers, a.license.computers))}
+    ${row('Expires', `${esc(a.license.expires)}<span class="hint">Renews through the cloud account</span>`)}
+
+    <h3 class="sec-h"><span>Users</span><button class="go" data-invite>Invite…</button></h3>
+    ${users}
+    <p class="hint" style="padding-top:14px">${Object.entries(ROLE_NOTE).map(([k,v]) => `<b style="color:var(--ink-2);font-weight:500">${ROLES[k]}</b> ${v}`).join(' · ')}</p>
+  </div>`;
+}
+
+/* ---------- settings ---------- */
+function settingsPage(){
+  const st = DATA.settings, row = (k, v, right='') => `<div class="srow"><span class="k">${k}</span><span class="v">${v}</span><span>${right}</span></div>`;
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(label)}</option>`;
+  const seg = (path, cur, opts) => `<span class="seg">${opts.map(([v,l]) => `<button class="${cur===v?'on':''}" data-seg="${path}" data-val="${v}">${l}</button>`).join('')}</span>`;
+  const toggle = (path, on) => `<button class="toggle ${on?'on':''}" role="switch" aria-checked="${on}" data-stoggle="${path}"><i></i></button>`;
+  const cmp = (a, b) => a.localeCompare(b, undefined, { numeric:true });
+  const behind = Object.entries(DATA.computers).filter(([,c]) => cmp(c.version, st.updates.latest) < 0);
+  const reach = UI.reach ? `<ul class="results">${UI.reach.map(r => `<li><span>${esc(r.c)}</span><span>${esc(r.what)}</span><span class="r ${r.ok?'ok':'bad'}">${r.ok ? 'Pass' : esc(r.why)}</span></li>`).join('')}</ul>` : '';
+  const walk = UI.walk ? (() => { const z = DATA.zones[UI.walk.zone], m = DATA.speakermaps[z.map], p = m.speakers[UI.walk.i];
+      return `<div class="walk"><span class="pulse"></span><div><div class="big">${esc(p.label)}</div><div class="sub">${esc(DATA.computers[p.computer].name)} · channel ${p.ch} · ${UI.walk.i+1} of ${m.speakers.length}</div></div>
+        <div class="cactions"><button class="act" data-walk="prev">Previous</button><button class="act" data-walk="next">Next</button><button class="go" data-walk="stop">Stop</button></div></div>`; })() : '';
+  const logs = UI.logs.filter(l => (UI.logFilter.computer==='all' || l.c===UI.logFilter.computer) && (UI.logFilter.level==='all' || l.l===UI.logFilter.level));
+  return `<div class="page net">
+    <h3 class="sec-h">Appearance and preferences</h3>
+    ${row('Theme', seg('theme', st.theme, [['dark','Dark'],['light','Light'],['auto','Auto']]))}
+    ${row('Units', seg('units', st.units, [['m','Meters'],['ft','Feet']]))}
+    ${row('Time', seg('clock', st.clock, [['12','12-hour'],['24','24-hour']]))}
+    ${row('Opens on', `<select class="field mid" data-sset="firstTab">${TABS.map(([id,l]) => opt(id, l, st.firstTab)).join('')}</select>`)}
+
+    <h3 class="sec-h">Alerts</h3>
+    ${row('Computer offline', toggle('alerts.offline', st.alerts.offline))}
+    ${row('Audio dropouts', toggle('alerts.dropouts', st.alerts.dropouts))}
+    ${row('High load', `${toggle('alerts.load', st.alerts.load)}<span class="hint">over</span><input class="field num mono" value="${st.alerts.loadPct}" data-sset="alerts.loadPct" data-kind="int" inputmode="numeric" ${st.alerts.load?'':'disabled'}><span class="hint">%</span>`)}
+    ${row('Cloud unreachable', toggle('alerts.cloud', st.alerts.cloud))}
+    ${row('Send to', `<input class="field" style="min-width:320px" value="${esc(st.alerts.emails)}" data-sset="alerts.emails" placeholder="name@company.com, …">`)}
+
+    <h3 class="sec-h"><span>Updates</span><button class="go" data-check-updates>Check for updates</button></h3>
+    ${row('Latest renderer', `${esc(st.updates.latest)}<span class="hint">${behind.length ? `${behind.length} computer${behind.length===1?'':'s'} behind` : 'All computers are current'}</span>`, behind.length ? `<button class="act" data-update-all>Update all</button>` : '')}
+    ${Object.entries(DATA.computers).map(([id,c]) => row(`<button class="name-link" data-computer="${id}">${esc(c.name)}</button>`, `${esc(c.version)}${cmp(c.version, st.updates.latest) < 0 ? '<span class="hint">update available</span>' : ''}`, cmp(c.version, st.updates.latest) < 0 ? `<button class="go" data-update="${id}">Update</button>` : '')).join('')}
+    ${row('Automatic updates', `${toggle('updates.auto', st.updates.auto)}<span class="hint">${st.updates.auto ? 'Installed in the window below' : 'Off'}</span>`)}
+    ${row('Update window', `<input class="field short" value="${esc(st.updates.window)}" data-sset="updates.window">`)}
+
+    <h3 class="sec-h"><span>Backup and restore</span><span><button class="go" data-export>Export configuration</button>&nbsp;&nbsp;<button class="go" data-import>Import…</button><input type="file" id="importfile" accept=".json,.splbackup" hidden></span></h3>
+    ${st.backups.map((b, i) => `<div class="srow"><span class="n">${esc(b.t)}</span><span class="v hint">${esc(b.by)} · ${esc(b.size)}</span><button class="go" data-restore="${i}">Restore</button></div>`).join('')}
+
+    <h3 class="sec-h">System test</h3>
+    ${row('Reachability', `<span class="hint">Ping, REST, SPLSensor, clock and multicast on every computer</span>`, `<button class="act" data-reach>Run</button>`)}
+    ${reach}
+    ${row('Audio walk', `<select class="field mid" data-ui-walkzone>${Object.entries(DATA.zones).filter(([,z]) => z.status!=='offline').map(([id,z]) => opt(id, z.name, UI.walkZone||'lobby')).join('')}</select><span class="hint">plays a tone through each speaker in turn</span>`, UI.walk ? '' : `<button class="act" data-walk="start">Start</button>`)}
+    ${walk}
+
+    <h3 class="sec-h">Debugging</h3>
+    ${row('Diagnostics bundle', UI.diag==='ready' ? `<span class="mark"></span>Ready · logs and configuration from ${Object.keys(DATA.computers).length} computers · 3.2 MB` : UI.diag==='collecting' ? `<span class="pulse"></span><span class="hint">Collecting…</span>` : `<span class="hint">Logs and configuration from every computer, in one file for support</span>`, UI.diag==='ready' ? `<button class="act" data-diag-download>Download</button>` : UI.diag ? '' : `<button class="act" data-diag>Collect</button>`)}
+    ${row('Live log', `<select class="field mid" data-logf="computer">${opt('all','All computers',UI.logFilter.computer)}${Object.entries(DATA.computers).map(([id,c]) => opt(id, c.name, UI.logFilter.computer)).join('')}</select><select class="field mid" data-logf="level">${opt('all','All levels',UI.logFilter.level)}${['error','warn','info','debug'].map(l => opt(l, l[0].toUpperCase()+l.slice(1), UI.logFilter.level)).join('')}</select>`, `<button class="go" data-log-clear>Clear</button>`)}
+    <ul class="log">${logs.map(l => `<li><span>${l.t}</span><span>${esc(DATA.computers[l.c]?.name||l.c)}</span><span class="lv ${l.l[0]}">${l.l}</span><span>${esc(l.m)}</span></li>`).join('') || '<li><span></span><span></span><span></span><span class="hint">Nothing matches</span></li>'}</ul>
+    <div class="console">
+      <div class="srow"><span class="k">Command console</span><span class="v nowrap">${seg('con.proto', UI.con.proto, [['rest','REST'],['osc','OSC']])}<select class="field mid" data-ui-con="target">${Object.entries(DATA.computers).map(([id,c]) => opt(id, c.name, UI.con.target)).join('')}</select></span><span></span></div>
+      <div class="cmd"><input class="field mono" id="con-cmd" value="${esc(UI.con.cmd)}" placeholder="${UI.con.proto==='rest' ? 'GET /zones/lobby' : '/zone/lobby/volume 72'}"><button class="act" data-send>Send</button></div>
+      ${UI.con.reply !== null ? `<div class="reply">${esc(UI.con.reply)}</div>` : ''}
+    </div>
+  </div>`;
+}
+function fakeReply(proto, target, cmd){
+  const c = DATA.computers[target]; if (c.status==='offline') return `No reply from ${c.name} (${ipOf(c)})`;
+  if (proto==='osc') { if (!c.procs.osc.on) return `SPLSensor is off on ${c.name}`; return `→ ${ipOf(c)}:${c.procs.osc.port}  ${cmd}\n← ack  ${cmd.split(' ')[0]}  (2 ms)`; }
+  if (!c.procs.rest.on) return `REST server is off on ${c.name}`;
+  const m = cmd.match(/^(GET|POST|PUT)\s+(\S+)/i); if (!m) return 'Use the form: GET /path  or  POST /path {json}';
+  const path = m[2], zid = (path.match(/\/zones\/(\w+)/)||[])[1], z = DATA.zones[zid];
+  if (z) { const it = itemOf(z); return `HTTP 200  (${ipOf(c)}:${c.procs.rest.port})\n` + JSON.stringify({ id:zid, name:z.name, status:z.status, rendering:z.rendering, scene:it?it.title:null, volume:z.volume, computers:z.computers, map:z.map }, null, 2); }
+  if (/^\/zones\/?$/.test(path)) return `HTTP 200  (${ipOf(c)}:${c.procs.rest.port})\n` + JSON.stringify(Object.keys(DATA.zones), null, 2);
+  if (/^\/status/.test(path)) return `HTTP 200\n` + JSON.stringify({ name:c.name, uuid:c.uuid, load:c.load, uptime:c.up, version:c.version, renderer:c.procs.renderer.on ? 'running' : 'off' }, null, 2);
+  return `HTTP 404  ${path} not found`;
+}
+let logTimer = null;
+function liveLogs(on){
+  clearInterval(logTimer); logTimer = null;
+  if (!on) return;
+  logTimer = setInterval(() => { const [c,l,m] = LOG_POOL[Math.floor(Math.random()*LOG_POOL.length)];
+    UI.logs.unshift({ t:new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit', second:'2-digit'}), c, l, m }); UI.logs = UI.logs.slice(0, 60);
+    if (route().tab==='settings' && !UI.sheet && document.activeElement?.id !== 'con-cmd') { const ul = document.querySelector('.log'); if (ul) { const keep = document.getElementById('main').scrollTop; render(); document.getElementById('main').scrollTop = keep; } } }, 4000);
+}
+
+/* ---------- sheets ---------- */
+function sheetItem(i, attr, on, tick){
+  return `<button class="item ${on?'on':''}" ${attr}><span><div class="t">${esc(i.title)}</div><div class="s">${i.source} · ${i.dur}</div></span><span class="tick">${on?tick:''}</span></button>`;
+}
+function renderSheet(){
+  const el = document.getElementById('sheet'), s = UI.sheet;
+  if (!s) { el.innerHTML = ''; return; }
+  const z = DATA.zones[s.zone], sp = s.zone ? spaceOfZone(s.zone) : null;
+  const allowed = DATA.library;
+  const filt = () => `<div class="filt">${['all','local','cloud'].map(f => `<button class="${UI.filter===f?'on':''}" data-filter="${f}">${f[0].toUpperCase()+f.slice(1)}</button>`).join('')}</div>`;
+  let body = '';
+  if (s.type==='scene') {
+    const tab = s.tab || 'favorites';
+    const favs = z.scenes.map(id => DATA.library.find(i => i.id===id)).filter(Boolean);
+    const lib = allowed.filter(i => UI.filter==='all' || i.source.toLowerCase()===UI.filter);
+    const row = (i, inFavs) => `<div class="item ${i.id===z.content?'on':''}">
+        <button class="pick" data-choose="${i.id}"><div class="t">${esc(i.title)}</div><div class="s">${i.source} · ${i.dur}${i.id===z.content?' · Loaded':''}</div></button>
+        <button class="go" data-toggle-scene="${i.id}">${inFavs ? 'Remove' : 'Favorite'}</button></div>`;
+    body = `<h3>Load a scene in ${esc(z.name)}</h3>
+      <div class="filt tabs"><button class="${tab==='favorites'?'on':''}" data-sheet-tab="favorites">Zone Favorites</button><button class="${tab==='library'?'on':''}" data-sheet-tab="library">Library</button></div>
+      ${tab==='favorites'
+        ? (favs.map(i => row(i, true)).join('') || '<p style="margin:10px 12px">No favorites yet. Mark scenes in the Library tab.</p>')
+        : filt() + lib.map(i => row(i, z.scenes.includes(i.id))).join('')}`;
+  } else if (s.type==='computers') {
+    body = `<h3>Computers for ${esc(z.name)}</h3><p>${esc(sp.name)} owns these computers. Assigning one here makes its channels available to ${esc(z.name)}'s speaker map.</p>
+      ${sp.computers.map(cid => { const c = DATA.computers[cid], on = z.computers.includes(cid);
+        return `<button class="item ${on?'on':''}" data-toggle-computer="${cid}"><span><div class="t">${esc(c.name)}</div><div class="s">${chanOf(c)} channels · ${c.status==='degraded'?esc(c.note):c.status==='offline'?'Offline':'Online'}</div></span><span class="tick">${on?'Assigned':''}</span></button>`; }).join('')}`;
+  } else if (s.type==='addip') {
+    body = `<h3>Add a computer by IP</h3><p>The app will reach the renderer's REST server at that address.</p>
+      <div class="srow"><span class="k">IP address</span><span class="v"><input class="field short mono" id="addip" placeholder="10.0.1.25" inputmode="numeric"></span><span></span></div>
+      <div class="btns"><button class="act" data-addip-go>Find</button><button class="go" data-cancel>Cancel</button></div>`;
+  } else if (s.type==='addint') {
+    const i = Object.assign({ name:'', type:'REST', host:'', port:DATA.defaults.rest, zones:[], feedback:false }, s.id ? DATA.integrations.find(x => x.id===s.id) : {}, s.draft);
+    const zoneChip = (zid, z) => `<button class="chip ${i.zones.includes(zid)?'on':''}" data-int-zone="${zid}">${esc(z.name)}</button>`;
+    body = `<h3>${s.id ? esc(i.name) : 'Add an integration'}</h3><p>A control system that talks to the renderers over REST or OSC.</p>
+      <div class="srow"><span class="k">Name</span><span class="v"><input class="field" id="int-name" value="${esc(i.name)}" placeholder="Q-SYS Core"></span><span></span></div>
+      <div class="srow"><span class="k">Protocol</span><span class="v"><select class="field short" id="int-type"><option ${i.type==='REST'?'selected':''}>REST</option><option ${i.type==='OSC'?'selected':''}>OSC</option></select></span><span></span></div>
+      <div class="srow"><span class="k">Host</span><span class="v"><input class="field short mono" id="int-host" value="${esc(i.host)}" placeholder="10.0.1.5" inputmode="numeric"></span><span></span></div>
+      <div class="srow"><span class="k">Port</span><span class="v"><input class="field num mono" id="int-port" value="${i.port}" inputmode="numeric"></span><span></span></div>
+      <div class="srow" style="min-height:64px"><span class="k">May control</span><span class="v zpick">${Object.entries(DATA.zones).map(([zid,z]) => zoneChip(zid, z)).join('')}</span><button class="go" data-int-zone="all">${i.zones.length===Object.keys(DATA.zones).length ? 'None' : 'All'}</button></div>
+      <div class="srow"><span class="k">Status updates</span><span class="v"><button class="toggle ${i.feedback?'on':''}" role="switch" data-int-feedback><i></i></button><span class="hint">${i.feedback ? 'Zone state is pushed to this system' : 'This system only sends commands'}</span></span><span></span></div>
+      <div class="btns"><button class="act" data-addint-go>${s.id ? 'Save' : 'Add'}</button><button class="go" data-cancel>Cancel</button>${s.id ? `<button class="go" style="margin-left:auto;color:var(--off)" data-int-remove="${s.id}">Remove</button>` : ''}</div>`;
+  } else if (s.type==='invite') {
+    body = `<h3>Invite a user</h3><p>They get an email with a link to this site.</p>
+      <div class="srow"><span class="k">Email</span><span class="v"><input class="field" id="inv-email" placeholder="name@company.com" inputmode="email"></span><span></span></div>
+      <div class="srow"><span class="k">Role</span><span class="v"><select class="field short" id="inv-role">${Object.entries(ROLES).filter(([k]) => k!=='owner').map(([k,v]) => `<option value="${k}" ${k==='installer'?'selected':''}>${v}</option>`).join('')}</select></span><span></span></div>
+      <div class="btns"><button class="act" data-invite-go>Send invite</button><button class="go" data-cancel>Cancel</button></div>`;
+  } else if (s.type==='password') {
+    body = `<h3>${s.local ? 'Local password' : 'Change password'}</h3><p>${s.local ? 'Used to sign in on site when the cloud is unreachable.' : 'Changes your cloud account password.'}</p>
+      ${s.local ? '' : '<div class="srow"><span class="k">Current</span><span class="v"><input class="field" type="password" id="pw-old"></span><span></span></div>'}
+      <div class="srow"><span class="k">New</span><span class="v"><input class="field" type="password" id="pw-new"></span><span></span></div>
+      <div class="srow"><span class="k">Repeat</span><span class="v"><input class="field" type="password" id="pw-rep"></span><span></span></div>
+      <div class="btns"><button class="act" data-pw-go>Save</button><button class="go" data-cancel>Cancel</button></div>`;
+  } else if (s.type==='restore') {
+    const b = DATA.settings.backups[s.i];
+    body = `<h3>Restore the configuration from ${esc(b.t)}?</h3><p>Every zone, computer, speaker map and integration goes back to that point. Playback restarts.</p>
+      <div class="btns"><button class="act" data-restore-go="${s.i}">Restore</button><button class="go" data-cancel>Keep current</button></div>`;
+  } else if (s.type==='delmap') {
+    const m = DATA.speakermaps[s.map];
+    body = `<h3>Delete ${esc(m.name)}?</h3><p>The file and its ${m.speakers.length} speakers are removed from this site. This cannot be undone.</p>
+      <div class="btns"><button class="act" style="color:var(--off)" data-delmap-go="${s.map}">Delete</button><button class="go" data-cancel>Keep</button></div>`;
+  } else if (s.type==='map') {
+    body = `<h3>Speaker map for ${esc(z.name)}</h3><p>Changing the speaker map restarts the zone.</p>
+      ${Object.entries(DATA.speakermaps).map(([k,v]) => `<button class="item ${k===z.map?'on':''}" data-choose-map="${k}"><span><div class="t">${esc(v.name)}</div></span><span class="tick">${k===z.map?'Current':''}</span></button>`).join('')}
+      <div class="btns"><button class="act" data-upload-map="${s.zone}">Upload a speaker map…</button><input type="file" id="mapfile" accept=".json,.xml,.csv,.txt,.spk" hidden></div>`;
+  } else if (s.type==='confirmMap') {
+    body = `<h3>Restart ${esc(z.name)}?</h3><p>Switching to ${esc(DATA.speakermaps[s.map].name)} restarts the zone. Playback stops for a moment and resumes on the new map.</p>
+      <div class="btns"><button class="act" data-confirm-map="${s.map}">Change and restart</button><button class="go" data-cancel>Keep ${esc(DATA.speakermaps[z.map].name)}</button></div>`;
+  }
+  el.innerHTML = `<div class="sheet-bg" data-close><div class="sheet">${body}</div></div>`;
+}
+
+/* ---------- placeholders ---------- */
+function stub(tab, id){
+  const title = TABS.find(t=>t[0]===tab)[1];
+  const notes = {
+  };
+  const focus = id ? `<b>${esc(nameOf(id))}</b>Detail for this ${tab.replace(/s$/,'')} will live here.` : `<b>${title}</b>We'll shape this page together next.`;
+  const back = id ? `<button class="back" data-go="dashboard">← Back</button>` : '';
+  return `<div class="page stub">${back}<h1>${title}</h1><p>${notes[tab]||''}</p><div class="alcove"><div>${focus}</div></div></div>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const r = route();
+  const main = document.getElementById('main');
+  const key = r.tab + '/' + (r.id || ''), same = key === UI.lastKey, keep = main.scrollTop;
+  main.innerHTML = r.tab==='dashboard' ? dashboard() : r.tab==='zones' ? zonesPage(r.id) : r.tab==='computers' ? computersPage(r.id) : r.tab==='network' ? networkPage() : r.tab==='speakermaps' ? speakermapsPage(r.id) : r.tab==='account' ? accountPage() : r.tab==='settings' ? settingsPage() : stub(r.tab, r.id);
+  main.scrollTop = same ? keep : 0; UI.lastKey = key;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===r.tab));
+  renderSheet(); bindCanvas(); liveLogs(r.tab==='settings');
+}
+function readIntForm(){
+  const dr = UI.sheet.draft, g = id => document.getElementById(id);
+  if (g('int-name')) Object.assign(dr, { name:g('int-name').value.trim(), type:g('int-type').value, host:g('int-host').value.trim(), port:+g('int-port').value });
+  return dr;
+}
+let toastTimer;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ---------- wiring ---------- */
+document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
+  `<button class="tab" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab],[data-zone],[data-computer],[data-go],[data-action],[data-select],[data-play],[data-pick],[data-choose],[data-filter],[data-edit-computers],[data-toggle-computer],[data-sheet-tab],[data-toggle-scene],[data-load],[data-change-map],[data-upload-map],[data-choose-map],[data-select-computer],[data-toggle],[data-ztoggle],[data-proc],[data-copy],[data-logs],[data-root-toggle],[data-disc-add],[data-add-ip],[data-addip-go],[data-apply-defaults],[data-sync],[data-int-test],[data-add-int],[data-addint-go],[data-int-edit],[data-int-zone],[data-int-feedback],[data-int-remove],[data-run-test],[data-select-map],[data-seg],[data-stoggle],[data-check-updates],[data-update-all],[data-update],[data-export],[data-import],[data-restore],[data-restore-go],[data-reach],[data-walk],[data-diag],[data-diag-download],[data-log-clear],[data-send],[data-tone],[data-change-pw],[data-signout],[data-local-pw],[data-cloud-manage],[data-site-add],[data-site-switch],[data-renew],[data-invite],[data-invite-go],[data-pw-go],[data-user-remove],[data-view],[data-spk-row],[data-spk-add],[data-spk-remove],[data-map-new],[data-map-replace],[data-map-download],[data-map-delete],[data-delmap-go],[data-plan-add],[data-plan-remove],[data-res-add],[data-confirm-map],[data-cancel],[data-close]');
+  if (!t) return;
+  const d = t.dataset;
+  if (d.tab)       return go(d.tab);
+  if (d.zone)      return go('zones', d.zone);
+  if (d.computer)  return go('computers', d.computer);
+  if (d.select)    return go('zones', d.select);
+  if (d.selectComputer) return go('computers', d.selectComputer);
+  if (d.toggle)    { setPath(DATA.computers, d.toggle, !getPath(DATA.computers, d.toggle)); render(); renderLocal(); return; }
+  if (d.ztoggle)   { setPath(DATA.zones, d.ztoggle, !getPath(DATA.zones, d.ztoggle)); return render(); }
+  if (d.proc)      { const [cid] = d.proc.split('.'); return toast(`Restart requested for ${DATA.computers[cid].name}`); }
+  if (d.rootToggle){ setPath(DATA, d.rootToggle, !getPath(DATA, d.rootToggle)); return render(); }
+  if (d.discAdd)   {
+    const i = DATA.discovered.findIndex(x => x.id===d.discAdd), dsc = DATA.discovered[i];
+    const spId = document.querySelector(`[data-disc-space="${d.discAdd}"]`).value, sp = DATA.spaces.find(x => x.id===spId);
+    const id = 'oc' + String(Object.keys(DATA.computers).length + 1).padStart(2,'0');
+    DATA.computers[id] = { name:dsc.name, space:spId, status:'online', load:5, ptp:{state:'locked',offset:'9 µs'}, up:'1 hour', uuid:dsc.uuid, model:'Mac mini M5', os:'macOS 27.0', version:dsc.version,
+      perms:{energy:false,login:false}, iface:'en0', ifaces:[{id:'en0',label:'Ethernet',ip:dsc.ip}], multicast:DATA.defaults.multicast,
+      device:'AES67 stream', channels:16, aes67:{stream:dsc.name+'-out', outDev:'en0', ip:'239.69.1.30', igmp:false}, input:{enabled:false, device:'AES67 stream', channels:8, ip:''},
+      procs:{renderer:{on:true}, rest:{on:true, port:DATA.defaults.rest}, osc:{on:true, port:DATA.defaults.osc}}, log:'Info', notes:'' };
+    sp.computers.push(id); DATA.discovered.splice(i, 1);
+    toast(`${dsc.name} added to ${sp.name}`); render(); renderLocal(); return;
+  }
+  if (t.hasAttribute('data-add-ip'))  { UI.sheet = { type:'addip' }; return renderSheet(); }
+  if (t.hasAttribute('data-addip-go')) {
+    const v = document.getElementById('addip').value.trim();
+    if (!/^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v)) return toast('Use the form nnn.nnn.nnn.nnn');
+    DATA.discovered.push({ id:'disc'+Date.now(), name:'Renderer at '+v, ip:v, version:'2.4.1', uuid:'A1B2C3D4-0000-4000-8000-'+Date.now().toString(16).slice(-12).padStart(12,'0') });
+    UI.sheet = null; toast(`Found a renderer at ${v}`); return render();
+  }
+  if (t.hasAttribute('data-apply-defaults')) {
+    Object.values(DATA.computers).forEach(c => { c.multicast = DATA.defaults.multicast; c.procs.rest.port = DATA.defaults.rest; c.procs.osc.port = DATA.defaults.osc; });
+    toast('Site defaults applied to every computer'); return render();
+  }
+  if (t.hasAttribute('data-sync')) { DATA.cloud.lastSync = 'just now'; toast('Cloud sync started'); return render(); }
+  if (d.intTest)   { const i = DATA.integrations.find(x => x.id===d.intTest); return toast(`${i.name} answered over ${i.type} in ${8 + Math.floor(Math.random()*20)} ms`); }
+  if (t.hasAttribute('data-add-int')) { UI.sheet = { type:'addint', draft:{ zones:[], feedback:false } }; return renderSheet(); }
+  if (d.intEdit)   { const i = DATA.integrations.find(x => x.id===d.intEdit); UI.sheet = { type:'addint', id:i.id, draft:{ zones:[...i.zones], feedback:i.feedback } }; return renderSheet(); }
+  if (d.intZone || d.intZone==='' ) {
+    const form = readIntForm(), all = Object.keys(DATA.zones);
+    if (d.intZone==='all') form.zones = form.zones.length===all.length ? [] : all;
+    else { const k = form.zones.indexOf(d.intZone); k >= 0 ? form.zones.splice(k,1) : form.zones.push(d.intZone); }
+    return renderSheet();
+  }
+  if (t.hasAttribute('data-int-feedback')) { const form = readIntForm(); form.feedback = !form.feedback; return renderSheet(); }
+  if (d.intRemove) { const k = DATA.integrations.findIndex(x => x.id===d.intRemove); const n = DATA.integrations[k].name; DATA.integrations.splice(k,1); UI.sheet = null; toast(`${n} removed`); return render(); }
+  if (t.hasAttribute('data-addint-go')) {
+    const form = readIntForm();
+    if (!form.name || !form.host) return toast('Name and host are needed');
+    if (!/^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(form.host)) return toast('Host must be an IP address for now');
+    if (!(form.port >= 1024 && form.port <= 65535)) return toast('Port must be between 1024 and 65535');
+    if (UI.sheet.id) { const i = DATA.integrations.find(x => x.id===UI.sheet.id); Object.assign(i, form); toast(`${i.name} saved`); }
+    else { DATA.integrations.push({ id:'int'+Date.now(), on:true, ...form }); toast(`${form.name} added`); }
+    UI.sheet = null; return render();
+  }
+  if (t.hasAttribute('data-run-test')) {
+    const c = DATA.computers[UI.testTarget], kinds = { ping:'Ping', rest:'REST server', osc:'SPLSensor', mcast:'Multicast' };
+    const ok = c.status !== 'offline' && !(UI.testKind==='osc' && !c.procs.osc.on) && !(UI.testKind==='rest' && !c.procs.rest.on);
+    const result = !ok ? (c.status==='offline' ? 'No reply' : 'Server is off on this computer')
+      : UI.testKind==='ping' ? `Reply in ${1 + Math.floor(Math.random()*4)} ms` : UI.testKind==='mcast' ? `Joined ${c.multicast}, packets flowing` : `OK · ${kinds[UI.testKind]} on port ${UI.testKind==='rest' ? c.procs.rest.port : c.procs.osc.port}`;
+    UI.tests.unshift({ t: new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit', second:'2-digit'}), target:c.name, kind:kinds[UI.testKind], ok, result });
+    UI.tests = UI.tests.slice(0, 8); return render();
+  }
+  if (d.selectMap) return go('speakermaps', d.selectMap);
+  if (d.seg)       { if (d.seg.startsWith('con.')) UI.con[d.seg.slice(4)] = d.val; else { DATA.settings[d.seg] = d.val; if (d.seg==='theme') applyTheme(); if (d.seg==='clock') tick(); } return render(); }
+  if (d.stoggle)   { setPath(DATA.settings, d.stoggle, !getPath(DATA.settings, d.stoggle)); return render(); }
+  if (t.hasAttribute('data-check-updates')) return toast(`Latest renderer is ${DATA.settings.updates.latest}`);
+  if (d.update)    { DATA.computers[d.update].version = DATA.settings.updates.latest; toast(`${DATA.computers[d.update].name} updating to ${DATA.settings.updates.latest}`); return render(); }
+  if (t.hasAttribute('data-update-all')) { Object.values(DATA.computers).forEach(c => c.version = DATA.settings.updates.latest); toast('Updating every computer'); return render(); }
+  if (t.hasAttribute('data-export')) { DATA.settings.backups.unshift({ t:'Just now', by:DATA.account.user.name, size:'186 KB' }); toast('orange-county.splbackup will download'); return render(); }
+  if (t.hasAttribute('data-import')) return document.getElementById('importfile').click();
+  if (d.restore)   { UI.sheet = { type:'restore', i:+d.restore }; return renderSheet(); }
+  if (d.restoreGo) { UI.sheet = null; toast(`Restored the configuration from ${DATA.settings.backups[+d.restoreGo].t}`); return render(); }
+  if (t.hasAttribute('data-reach')) {
+    UI.reach = []; Object.values(DATA.computers).forEach(c => { const off = c.status==='offline';
+      UI.reach.push({ c:c.name, what:'Ping ' + ipOf(c), ok:!off, why:'No reply' });
+      UI.reach.push({ c:c.name, what:`REST on ${c.procs.rest.port}`, ok:!off && c.procs.rest.on, why:off ? 'No reply' : 'Server is off' });
+      UI.reach.push({ c:c.name, what:`SPLSensor on ${c.procs.osc.port}`, ok:!off && c.procs.osc.on, why:off ? 'No reply' : 'Server is off' });
+      UI.reach.push({ c:c.name, what:'PTP clock', ok:c.ptp.state==='locked', why:'Not locked' });
+      UI.reach.push({ c:c.name, what:`Multicast ${c.multicast}`, ok:!off && c.multicast===DATA.defaults.multicast, why:off ? 'No reply' : 'Differs from site default' }); });
+    toast(`${UI.reach.filter(r => !r.ok).length} of ${UI.reach.length} checks failed`); return render();
+  }
+  if (d.walk) {
+    if (d.walk==='start') { const zid = UI.walkZone || 'lobby'; UI.walk = { zone:zid, i:0 }; }
+    else if (d.walk==='stop') UI.walk = null;
+    else { const n = DATA.speakermaps[DATA.zones[UI.walk.zone].map].speakers.length; UI.walk.i = (UI.walk.i + (d.walk==='next' ? 1 : n - 1)) % n; }
+    return render();
+  }
+  if (t.hasAttribute('data-diag')) { UI.diag = 'collecting'; render(); setTimeout(() => { UI.diag = 'ready'; if (route().tab==='settings') render(); }, 2200); return; }
+  if (t.hasAttribute('data-diag-download')) { UI.diag = null; toast('diagnostics-orange-county.zip will download'); return render(); }
+  if (t.hasAttribute('data-log-clear')) { UI.logs = []; return render(); }
+  if (t.hasAttribute('data-send')) { UI.con.cmd = document.getElementById('con-cmd').value.trim(); if (!UI.con.cmd) return toast('Type a command'); UI.con.reply = fakeReply(UI.con.proto, UI.con.target, UI.con.cmd); return render(); }
+  if (d.tone)      { const [mid, sid] = d.tone.split('.'), m = DATA.speakermaps[mid], p = m.speakers.find(x => x.id===sid);
+                     if (UI.tone === sid) { UI.tone = null; toast('Tone stopped'); } else { UI.tone = sid; UI.spk = sid; toast(`Tone on ${p.label} · ${DATA.computers[p.computer].name} ch ${p.ch}`); } return render(); }
+  if (t.hasAttribute('data-change-pw')) { UI.sheet = { type:'password' }; return renderSheet(); }
+  if (t.hasAttribute('data-local-pw'))  { UI.sheet = { type:'password', local:true }; return renderSheet(); }
+  if (t.hasAttribute('data-pw-go')) {
+    const n = document.getElementById('pw-new').value, r = document.getElementById('pw-rep').value;
+    if (n.length < 8) return toast('Use at least 8 characters'); if (n !== r) return toast('Passwords do not match');
+    if (UI.sheet.local) { DATA.account.signin.localFallback = true; } UI.sheet = null; toast('Password saved'); return render();
+  }
+  if (t.hasAttribute('data-signout'))   return toast('Signed out (mockup: you stay on the page)');
+  if (t.hasAttribute('data-cloud-manage')) return toast('Opens the cloud account in a browser');
+  if (t.hasAttribute('data-site-add'))  return toast('Site creation happens in the cloud account');
+  if (d.siteSwitch) { const st = DATA.account.sites.find(x => x.id===d.siteSwitch); toast(`Switching to ${st.name} would load that site (mockup keeps Orange County)`); return; }
+  if (t.hasAttribute('data-renew'))     return toast('Renewal opens in the cloud account');
+  if (t.hasAttribute('data-invite'))    { UI.sheet = { type:'invite' }; return renderSheet(); }
+  if (t.hasAttribute('data-invite-go')) {
+    const em = document.getElementById('inv-email').value.trim(), role = document.getElementById('inv-role').value;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return toast('Enter an email address');
+    DATA.account.users.push({ id:'u'+Date.now(), name:em.split('@')[0], email:em, role, seen:'Invited' }); UI.sheet = null; toast(`Invite sent to ${em}`); return render();
+  }
+  if (d.userRemove) { const k = DATA.account.users.findIndex(x => x.id===d.userRemove), n = DATA.account.users[k].name; DATA.account.users.splice(k,1); toast(`${n} removed`); return render(); }
+  if (d.view)      { UI.view = d.view; return render(); }
+  if (d.spkRemove) { const [mid,i] = d.spkRemove.split('.'); DATA.speakermaps[mid].speakers.splice(+i, 1); return render(); }
+  if (d.spkAdd)    { const m = DATA.speakermaps[d.spkAdd], ze = Object.entries(DATA.zones).find(([,z]) => z.map===d.spkAdd), sp = ze ? spaceOfZone(ze[0]) : DATA.spaces[0];
+                     const cid = sp.computers[0], usedCh = (mapUses(m)[cid] || []); let ch = 1; while (usedCh.includes(ch)) ch++;
+                     const n = spk(`Speaker ${m.speakers.length+1}`, cid, ch, 0, 0, 1.2); m.speakers.push(n); UI.spk = n.id; return render(); }
+  if (d.spkRow !== undefined && !e.target.closest('input,select,button')) { UI.spk = d.spkRow; return render(); }
+  if (t.hasAttribute('data-map-new'))     return document.getElementById('mapfile-new').click();
+  if (d.mapReplace)  return document.getElementById('mapfile-replace').click();
+  if (d.mapDownload) return toast(`${DATA.speakermaps[d.mapDownload].file.name} will download`);
+  if (d.mapDelete)   { const ze = Object.entries(DATA.zones).find(([,z]) => z.map===d.mapDelete);
+                       if (ze) return toast(`${ze[1].name} uses this map. Change its speaker map first.`);
+                       UI.sheet = { type:'delmap', map:d.mapDelete }; return renderSheet(); }
+  if (d.delmapGo)    { const n = DATA.speakermaps[d.delmapGo].name; delete DATA.speakermaps[d.delmapGo]; UI.sheet = null; toast(`${n} deleted`); return go('speakermaps'); }
+  if (t.hasAttribute('data-plan-add'))    return document.getElementById('planfile').click();
+  if (d.planRemove)  { DATA.speakermaps[d.planRemove].plan.src = null; return render(); }
+  if (t.hasAttribute('data-res-add'))     return document.getElementById('resfile').click();
+  if (d.copy)      { try { navigator.clipboard.writeText(d.copy); } catch(_){} return toast('Copied'); }
+  if (d.logs)      return toast(`Logs for ${DATA.computers[d.logs].name} will open here`);
+  if (d.go)        { const [tab,id] = d.go.split('/'); return go(tab, id); }
+  if (d.action) {
+    const me = DATA.computers[DATA.local].name;
+    if (d.action==='restart') toast(`Restart requested for ${me}`);
+    if (d.action==='logs')  { toast(`Logs for ${me} will live on its page`); go('computers', DATA.local); }
+    return;
+  }
+  if (d.play) {
+    const z = DATA.zones[d.play];
+    if (!itemOf(z)) return toast('Choose content first');
+    z.rendering = !z.rendering; z.level = z.rendering ? .55 : 0;
+    render(); renderLocal(); return;
+  }
+  if (d.pick)          { UI.sheet = { type:'scene', zone:d.pick }; UI.filter='all'; return renderSheet(); }
+  if (d.editComputers) { UI.sheet = { type:'computers', zone:d.editComputers }; return renderSheet(); }
+  if (d.changeMap)     { UI.sheet = { type:'map', zone:d.changeMap }; return renderSheet(); }
+  if (d.uploadMap)     { return document.getElementById('mapfile').click(); }
+  if (d.filter)        { UI.filter = d.filter; return renderSheet(); }
+  if (d.sheetTab)      { UI.sheet.tab = d.sheetTab; return renderSheet(); }
+  if (d.choose || d.load) {
+    const zid = d.load ? d.zid : UI.sheet.zone, z = DATA.zones[zid];
+    z.content = d.choose || d.load; UI.sheet = null;
+    toast(`${z.name} loaded ${itemOf(z).title}`); return render();
+  }
+  if (d.toggleScene) {
+    const z = DATA.zones[UI.sheet.zone], i = z.scenes.indexOf(d.toggleScene);
+    i >= 0 ? z.scenes.splice(i,1) : z.scenes.push(d.toggleScene);
+    return renderSheet();
+  }
+  if (d.toggleComputer) {
+    const z = DATA.zones[UI.sheet.zone], i = z.computers.indexOf(d.toggleComputer);
+    i >= 0 ? z.computers.splice(i,1) : z.computers.push(d.toggleComputer);
+    render(); renderLocal(); return;
+  }
+  if (d.chooseMap) {
+    const z = DATA.zones[UI.sheet.zone];
+    if (d.chooseMap === z.map) { UI.sheet = null; return renderSheet(); }
+    UI.sheet = { type:'confirmMap', zone:UI.sheet.zone, map:d.chooseMap }; return renderSheet();
+  }
+  if (d.confirmMap) {
+    const z = DATA.zones[UI.sheet.zone]; z.map = d.confirmMap; UI.sheet = null;
+    toast(`${z.name} restarted on ${DATA.speakermaps[z.map].name}`); return render();
+  }
+  if (t.hasAttribute('data-cancel')) { UI.sheet = null; return renderSheet(); }
+  if (t.hasAttribute('data-close') && e.target === t) { UI.sheet = null; return renderSheet(); }
+});
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.planOpacity) { const m = DATA.speakermaps[t.dataset.planOpacity]; m.plan.opacity = +t.value/100; t.style.setProperty('--p', t.value + '%'); const im = document.querySelector('#canvas image'); if (im) im.setAttribute('opacity', m.plan.opacity); return; }
+  if (t.dataset.vol) { const z = DATA.zones[t.dataset.vol]; z.volume = +t.value; if (z.rendering) z.level = z.volume/100*.85; t.style.setProperty('--p', z.volume + '%'); document.getElementById('vol-v').textContent = z.volume; }
+});
+document.addEventListener('change', e => {
+  const t = e.target, d = t.dataset;
+  if (t.id === 'mapfile' && t.files[0]) {
+    const f = t.files[0], id = 'up' + Date.now(), name = f.name.replace(/\.[^.]+$/, '');
+    DATA.speakermaps[id] = { name, file:{ name:f.name, uploaded:'today' }, plan:{ src:null, width:12, opacity:.4 }, speakers:[], resources:[], notes:'' };
+    toast(`Uploaded ${name}`);
+    UI.sheet = { type:'confirmMap', zone:UI.sheet.zone, map:id }; return renderSheet();
+  }
+  if (d.ui)    { UI[d.ui] = t.value; return; }
+  if (t.hasAttribute('data-ui-walkzone')) { UI.walkZone = t.value; return; }
+  if (d.uiCon) { UI.con[d.uiCon] = t.value; return; }
+  if (d.logf)  { UI.logFilter[d.logf] = t.value; return render(); }
+  if (t.id === 'importfile' && t.files[0]) { toast(`${t.files[0].name} imported. Review the restore points.`); DATA.settings.backups.unshift({ t:'Imported just now', by:t.files[0].name, size:Math.round(t.files[0].size/1024) + ' KB' }); return render(); }
+  if (d.sset)  { const v = t.value.trim();
+                 if (d.kind==='int' && !(/^\d+$/.test(v) && +v > 0 && +v <= 100)) { t.classList.add('invalid'); return toast('Enter a percentage'); }
+                 setPath(DATA.settings, d.sset, d.kind==='int' ? +v : v); return render(); }
+  if (d.role)  { const u = DATA.account.users.find(x => x.id===d.role); u.role = t.value; toast(`${u.name} is now ${ROLES[u.role]}`); return; }
+  if (t.id === 'mapfile-new' && t.files[0]) {
+    const f = t.files[0], id = 'up' + Date.now(), name = f.name.replace(/\.[^.]+$/, '');
+    DATA.speakermaps[id] = { name, file:{ name:f.name, uploaded:'today' }, plan:{ src:null, width:12, opacity:.4 }, speakers:[], resources:[], notes:'' };
+    toast(`Uploaded ${name}`); return go('speakermaps', id);
+  }
+  if (t.id === 'mapfile-replace' && t.files[0]) { const m = DATA.speakermaps[route().id]; m.file = { name:t.files[0].name, uploaded:'today' }; toast(`${m.name} replaced from ${t.files[0].name}`); return render(); }
+  if (t.id === 'planfile' && t.files[0]) { const m = DATA.speakermaps[route().id], rd = new FileReader(); rd.onload = () => { const im = new Image(); im.onload = () => { m.plan.ratio = im.naturalWidth / im.naturalHeight || 1; m.plan.src = rd.result; render(); }; im.src = rd.result; }; rd.readAsDataURL(t.files[0]); return; }
+  if (t.id === 'resfile' && t.files[0]) { const f = t.files[0], m = DATA.speakermaps[route().id]; m.resources.push({ name:f.name, kind:/^image\//.test(f.type) ? 'photo' : 'file', size:(f.size/1024 < 1024 ? Math.round(f.size/1024) + ' KB' : (f.size/1048576).toFixed(1) + ' MB') }); return render(); }
+  if (d.spk)   { const [mid,i,k] = d.spk.split('.'), p = DATA.speakermaps[mid].speakers[+i];
+                 if (d.kind==='num' && isNaN(+t.value)) { t.classList.add('invalid'); return toast('Numbers only'); }
+                 if (d.kind==='len' && isNaN(+t.value)) { t.classList.add('invalid'); return toast('Numbers only'); }
+                 p[k] = d.kind==='len' ? fromUnit(t.value) : d.kind==='num' ? +(+t.value).toFixed(1) : d.kind==='int' ? +t.value : t.value;
+                 if (k==='computer') p.ch = Math.min(p.ch, chanOf(DATA.computers[p.computer]));
+                 return render(); }
+  if (d.mset)  { const v = t.value.trim(); if (d.kind==='num' && !(+v > 0)) { t.classList.add('invalid'); return toast('Enter a width in meters'); }
+                 setPath(DATA.speakermaps, d.mset, d.kind==='num' ? +v : v); if (d.kind==='notes') return toast('Notes saved'); return render(); }
+  if (d.root)  {
+    const v = t.value.trim();
+    if (d.kind==='ip'   && !/^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v)) { t.classList.add('invalid'); return toast('Use the form nnn.nnn.nnn.nnn'); }
+    if (d.kind==='port' && !(/^\d+$/.test(v) && +v >= 1024 && +v <= 65535)) { t.classList.add('invalid'); return toast('Port must be between 1024 and 65535'); }
+    setPath(DATA, d.root, d.kind==='port' ? +v : v); return render();
+  }
+  if (d.zset)  { setPath(DATA.zones, d.zset, t.value || null); return render(); }
+  if (d.set) {
+    const v = t.value.trim();
+    if (d.kind==='ip'   && !/^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}$/.test(v)) { t.classList.add('invalid'); return toast('Use the form nnn.nnn.nnn.nnn'); }
+    if (d.kind==='port' && !(/^\d+$/.test(v) && +v >= 1024 && +v <= 65535)) { t.classList.add('invalid'); return toast('Port must be between 1024 and 65535'); }
+    if (d.kind==='name' && !v) { t.classList.add('invalid'); return toast('A computer needs a name'); }
+    setPath(DATA.computers, d.set, d.kind==='port' || d.kind==='int' ? +v : v);
+    if (d.kind==='notes') return toast('Notes saved');
+    render(); renderLocal(); return;
+  }
+  if (d.name)  { DATA.zones[d.name].name = t.value.trim() || DATA.zones[d.name].name; return render(); }
+  if (d.notes) { DATA.zones[d.notes].notes = t.value.trim(); return toast('Notes saved'); }
+});
+document.addEventListener('keydown', e => { if (e.key==='Escape' && UI.sheet) { UI.sheet = null; renderSheet(); } if (e.key==='Enter' && e.target.id==='con-cmd') document.querySelector('[data-send]').click(); });
+
+function tick(){ const d=new Date();
+  document.getElementById('clock').textContent =
+    d.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'}) + ' · ' +
+    d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12: DATA.settings.clock==='12'}); }
+tick(); setInterval(tick, 1000);
+try { const t = localStorage.getItem('spl-theme'); if (t) DATA.settings.theme = t; } catch(_){}
+applyTheme();
+if (new URLSearchParams(location.search).has('remote')) DATA.local = null;
+renderLocal();
+render();
+</script>
+</body>
+</html>

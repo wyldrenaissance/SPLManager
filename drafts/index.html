@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SPL Manager · Draft compare</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#141414;color:#ddd;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;font-size:13px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.bar{height:58px;flex:none;display:flex;align-items:center;gap:6px;padding:0 14px;background:#1c1c1c;border-bottom:1px solid #2a2a2a}
+.bar .t{color:#777;margin-right:10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+button{font-family:inherit;border:1px solid #333;background:#222;color:#bbb;border-radius:8px;padding:7px 12px;cursor:pointer;text-align:left;line-height:1.15}
+button b{display:block;color:#eee;font-weight:600;font-size:13px}
+button span{font-size:11px;color:#888}
+button.active{background:#2f3a33;border-color:#4e7a5e;color:#fff}
+button.active span{color:#9fc7ac}
+.hint{margin-left:auto;color:#666;font-size:12px}
+iframe{flex:1;border:0;width:100%;background:#000}
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="t">Drafts</span>
+  <button data-src="a-canyon.html"><b>A · Canyon</b><span>on-brief · airy · soft raised panels</span></button>
+  <button data-src="b-moss-terminal.html"><b>B · Moss Terminal</b><span>on-brief · balanced · hairlines, tables</span></button>
+  <button data-src="c-alcove.html"><b>C · Alcove</b><span>on-brief · airy · recessed windows in a wall</span></button>
+  <button data-src="d-obsidian.html"><b>D · Obsidian</b><span>outlier · balanced · near-black, one accent</span></button>
+  <button data-src="e-daylight.html"><b>E · Daylight</b><span>outlier · airy · sand and moss</span></button>
+  <span class="t" style="margin-left:14px">Round 2</span>
+  <button data-src="c1-alcove-rails.html"><b>C1 · Rails</b><span>C + D's rails and meters + events</span></button>
+  <button data-src="c2-alcove-bare.html"><b>C2 · Bare</b><span>stripped: no grain, exceptions only</span></button>
+  <button data-src="c3-alcove-slots.html"><b>C3 · Slots</b><span>zones as horizontal slots</span></button>
+  <span class="t" style="margin-left:14px">Round 3</span>
+  <button data-src="../app/index.html"><b>App shell</b><span>clickable · C3 refined, all tabs</span></button>
+  <span class="hint">← → keys switch · 1–9 jump</span>
+</div>
+<iframe id="f" src="a-canyon.html"></iframe>
+<script>
+const bs=[...document.querySelectorAll('button')],f=document.getElementById('f');
+let i=Math.max(0,bs.findIndex(b=>b.dataset.src===location.hash.slice(1)));
+function go(n){i=(n+bs.length)%bs.length;bs.forEach((b,k)=>b.classList.toggle('active',k===i));f.src=bs[i].dataset.src;location.hash=bs[i].dataset.src}
+bs.forEach((b,k)=>b.onclick=()=>go(k));
+addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(i+1);if(e.key==='ArrowLeft')go(i-1);if(/^[1-9]$/.test(e.key))go(+e.key-1)});
+go(i);
+</script>
+</body>
+</html>
