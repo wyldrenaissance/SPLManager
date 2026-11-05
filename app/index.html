@@ -3,20 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Orange County</title>
+<title>SPLM</title>
+<meta property="og:title" content="SPLM">
+<meta name="apple-mobile-web-app-title" content="SPLM">
+<meta name="theme-color" content="#141420">
 <style>
-:root{
+:root{ /* Spatial Reality (default): deep indigo-charcoal, magenta accent */
+  --wall:#141420; --wall-hi:#1c1c2b; --void:#0b0b10; --void-hi:#111118;
+  --ink:#f4f3f8; --ink-2:#a9a8b8; --ink-3:#6c6b7d;
+  --ok:#6fd49a; --warn:#e8bb62; --off:#e5636b; --accent:#f03d78;
+  --mist:176,172,196;
+  --line:rgba(176,172,196,.09); --fill:rgba(176,172,196,.07); --fill-hi:rgba(176,172,196,.12);
+  --hover:rgba(176,172,196,.045); --line-strong:rgba(176,172,196,.3); --inset:rgba(0,0,0,.4);
+  --pad:56px;
+}
+:root[data-theme="woodland"]{ /* the original dark green */
   --wall:#16261e; --wall-hi:#1c2e25; --void:#0b1511; --void-hi:#0f1a15;
   --ink:#eaf0eb; --ink-2:#a1b5a8; --ink-3:#5f7367;
   --ok:#7ad99b; --warn:#e8bb62; --off:#dc7a66; --accent:#94e3ad;
-  --line:var(--line); --fill:var(--fill); --fill-hi:var(--fill-hi);
-  --hover:var(--hover); --line-strong:var(--line-strong); --inset:var(--inset);
-  --pad:56px;
+  --mist:164,184,171;
+  --line:rgba(164,184,171,.09); --fill:rgba(164,184,171,.07); --fill-hi:rgba(164,184,171,.12);
+  --hover:rgba(164,184,171,.045); --line-strong:rgba(164,184,171,.3); --inset:rgba(0,0,0,.35);
 }
-:root[data-theme="light"]{
+:root[data-theme="light"]{ /* sand and moss */
   --wall:#e9e3d6; --wall-hi:#dfd8c9; --void:#f5f1e9; --void-hi:#efeadf;
   --ink:#1d2a23; --ink-2:#56665d; --ink-3:#8f9a93;
   --ok:#3f8f5e; --warn:#b07c14; --off:#c2574a; --accent:#3e8a5e;
+  --mist:50,60,54;
   --line:rgba(0,0,0,.07); --fill:rgba(0,0,0,.05); --fill-hi:rgba(0,0,0,.09);
   --hover:rgba(0,0,0,.035); --line-strong:rgba(0,0,0,.22); --inset:rgba(0,0,0,.07);
 }
@@ -95,7 +108,7 @@ main{flex:1;overflow:auto;padding:8px var(--pad) 40px}
 .slot .st{font-size:13.5px;color:var(--ink-3)}
 .slot.warn .st{color:var(--warn)} .slot.off .st{color:var(--off)}
 .slot.off{opacity:.5}
-.level{height:4px;border-radius:2px;background:rgba(164,184,171,.07);overflow:hidden}
+.level{height:4px;border-radius:2px;background:rgba(var(--mist),.07);overflow:hidden}
 .level i{display:block;height:100%;border-radius:2px;background:var(--accent);opacity:.75;transform-origin:left;animation:breathe 2.4s ease-in-out infinite}
 .slot.warn .level i{background:var(--warn)}
 .slot.idle .level i,.slot.off .level i{animation:none;width:0}
@@ -142,7 +155,7 @@ main{flex:1;overflow:auto;padding:8px var(--pad) 40px}
 .vol .k{font-size:13px;color:var(--ink-3);width:60px}
 .vol .v{width:36px;text-align:right;color:var(--ink-2);font-size:14px}
 input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;outline:none;cursor:pointer;
-  background:linear-gradient(90deg,var(--accent) var(--p),rgba(164,184,171,.12) var(--p))}
+  background:linear-gradient(90deg,var(--accent) var(--p),rgba(var(--mist),.12) var(--p))}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--ink);box-shadow:0 1px 4px var(--inset);cursor:pointer}
 
 .settings{padding-top:8px}
@@ -254,7 +267,7 @@ select.field option{background:var(--wall);color:var(--ink)}
 .res{display:flex;gap:14px;flex-wrap:wrap;padding:14px 0 4px}
 .resitem{display:flex;flex-direction:column;gap:6px;width:124px;font-size:12.5px;color:var(--ink-2)}
 .resitem .thumb{height:82px;border-radius:12px;background:var(--fill);display:grid;place-items:center;color:var(--ink-3);font-size:11px;letter-spacing:.06em}
-.resitem .thumb.photo{background:linear-gradient(135deg,#26402f,#13231b)}
+.resitem .thumb.photo{background:linear-gradient(135deg,var(--wall-hi),var(--void))}
 .resitem .hint{font-size:12px}
 
 /* ---- account ---- */
@@ -269,7 +282,7 @@ select.field option{background:var(--wall);color:var(--ink)}
 .urow .field{min-width:0;width:100%}
 .srow .n{color:var(--ink);font-size:15px;font-weight:500}
 .lic{font-variant-numeric:tabular-nums;letter-spacing:.04em}
-.bar{height:4px;border-radius:2px;background:rgba(164,184,171,.1);overflow:hidden;width:140px;display:inline-block;vertical-align:middle;margin:0 10px 0 4px}
+.bar{height:4px;border-radius:2px;background:rgba(var(--mist),.1);overflow:hidden;width:140px;display:inline-block;vertical-align:middle;margin:0 10px 0 4px}
 .bar i{display:block;height:100%;background:var(--accent);opacity:.8}
 .bar.warn i{background:var(--warn)}
 
@@ -294,7 +307,7 @@ select.field option{background:var(--wall);color:var(--ink)}
 .sprow .tone{color:var(--ink-3);font-size:13px;text-align:center} .sprow .tone:hover,.sprow .tone.on{color:var(--accent)}
 
 /* ---- sheets (pickers) ---- */
-.sheet-bg{position:fixed;inset:0;background:rgba(5,10,8,.55);display:grid;place-items:center;z-index:10}
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:10}
 .sheet{width:520px;max-height:72vh;overflow:auto;background:var(--wall);border-radius:28px;padding:26px 28px 20px;box-shadow:0 30px 60px rgba(0,0,0,.6)}
 .sheet h3{font-size:18px;font-weight:500}
 .sheet p{color:var(--ink-3);font-size:13.5px;margin:4px 0 14px}
@@ -336,6 +349,27 @@ nav{height:84px;flex:none;display:flex;justify-content:center;align-items:center
 .tab:hover{color:var(--ink-2)}
 .tab.active{background:var(--wall-hi);color:var(--ink)}
 .tab.active svg{stroke:var(--accent)}
+
+/* ---- installer ---- */
+.inst{padding-top:8px}
+.inst-h{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:12px}
+.inst-h h1{font-size:28px;font-weight:500;letter-spacing:-.01em;margin-top:2px}
+.isteps{display:flex;gap:2px;padding:3px;border-radius:999px;background:var(--fill)}
+.istep{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 8px;border-radius:999px;font-size:13px;color:var(--ink-3);white-space:nowrap;transition:background .15s}
+.istep .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:var(--fill-hi);color:var(--ink-2)}
+.istep.on{background:var(--wall-hi);color:var(--ink)} .istep.on .num{background:var(--accent);color:var(--void)}
+.istep.done{color:var(--ink-2)} .istep.done .num{background:transparent;color:var(--ok)}
+.istep:not(:disabled):hover{color:var(--ink)}
+.inst-lead{color:var(--ink-2);font-size:15px;max-width:600px;margin:0 0 22px}
+.inst-act{display:flex;align-items:center;gap:12px;padding:18px 0 6px}
+.inst-foot{display:flex;align-items:center;justify-content:space-between;margin-top:40px;padding-top:22px;border-top:1px solid var(--line)}
+.inst-foot .cactions{margin-left:0}
+.act.primary{background:var(--accent);color:var(--void);font-weight:500}
+.act.primary:hover{background:var(--accent);color:var(--void);filter:brightness(1.12)}
+.inst-banner{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:14px 18px;border-radius:16px;background:var(--fill);font-size:14px;color:var(--ink-2);margin-bottom:8px;flex-wrap:wrap}
+.inst-banner b{color:var(--ink);font-weight:500}
+.inst-banner .go{margin-left:auto}
+.inst-nomac{padding:40px 0;color:var(--ink-2);max-width:520px}
 
 /* ---- phone (under 760px) ---- */
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -385,6 +419,11 @@ nav{height:84px;flex:none;display:flex;justify-content:center;align-items:center
   .cfacts{gap:12px 22px}
   .cactions{margin-left:0;width:100%}
   .proc{grid-template-columns:1fr auto auto;gap:10px}
+  .inst-h h1{font-size:22px}
+  .isteps{width:100%;overflow-x:auto}
+  .istep{flex:1;justify-content:center;padding:6px 8px}
+  .istep span:last-child{display:none} .istep.on span:last-child{display:inline}
+  .inst-foot{flex-wrap:wrap;gap:12px}
   .proc .k{font-size:14px}
   /* network, account, maps: wide tables scroll sideways inside their section */
   .nhead,.nrow{min-width:720px}
@@ -514,7 +553,7 @@ const DATA = {
     ],
   },
   settings: {
-    theme:'dark', units:'m', clock:'12', firstTab:'dashboard',
+    theme:'spatial', units:'m', clock:'12', firstTab:'dashboard',
     alerts: { offline:true, dropouts:true, load:true, loadPct:85, cloud:false, emails:'wyatt@wyldrenaissance.com, dana@wyldrenaissance.com' },
     updates: { latest:'2.4.2', auto:false, window:'2:00 – 4:00 AM' },
     backups: [ { t:'Nov 3, 11:10 PM', by:'Automatic', size:'184 KB' }, { t:'Oct 28, 4:32 PM', by:'Wyatt Giampa', size:'181 KB' }, { t:'Oct 12, 9:05 AM', by:'Dana Ortiz', size:'176 KB' } ],
@@ -532,6 +571,7 @@ const DATA = {
     { id:'josh',     name:'Josh.ai',      type:'REST', host:'10.0.1.40', port:7378, on:false, zones:[], feedback:false },
   ],
   local: 'oc01',   // the computer serving this UI; null when the UI is opened remotely
+  install: { done:true, version:'2.4.1', when:'Nov 4', draft:null, installed:true, progress:null, checks:null, tone:false },
   events: [
     { t:'14:19', who:'oc03',    kind:'warn', text:'had three audio dropouts in the last minute' },
     { t:'13:48', who:'cabanas', kind:'off',  text:'stopped responding' },
@@ -565,11 +605,13 @@ const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>'
 const ICON_STOP = '<svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>';
 
 /* ---------- theme / units ---------- */
+const THEMES = [['spatial','Spatial Reality'],['woodland','Woodland'],['light','Light']];
 function applyTheme(){
-  const t = DATA.settings.theme, light = t==='light' || (t==='auto' && matchMedia('(prefers-color-scheme: light)').matches);
-  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  const t = DATA.settings.theme;
+  document.documentElement.dataset.theme = t;
   try { localStorage.setItem('spl-theme', t); } catch(_){}
 }
+const mist = a => { let m = '164,184,171'; try { m = getComputedStyle(document.documentElement).getPropertyValue('--mist').trim() || m; } catch(_){} return `rgba(${m},${a})`; };
 const toUnit  = m => DATA.settings.units==='ft' ? +(m*3.28084).toFixed(1) : m;
 const fromUnit = v => DATA.settings.units==='ft' ? +(v/3.28084).toFixed(1) : +(+v).toFixed(1);
 const unitLabel = () => DATA.settings.units==='ft' ? 'ft' : 'm';
@@ -590,7 +632,7 @@ const ipOf = c => (c.ifaces.find(i => i.id===c.iface) || {}).ip || '—';
 const outputOf = c => DATA.devices[c.device].output;
 const chanOf = c => outputOf(c)==='AES67' ? c.channels : Math.min(c.channels, DATA.devices[c.device].outs);
 const getPath = (o, p) => p.split('.').reduce((a,k) => a[k], o);
-const setPath = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); getPath(o, ks.join('.'))[last] = v; };
+const setPath = (o, p, v) => { const ks = p.split('.'), last = ks.pop(); (ks.length ? getPath(o, ks.join('.')) : o)[last] = v; };
 const PAL = ['#94e3ad','#e8bb62','#8fb8e8','#d9a4e0','#e8a58f','#a9d3d9'];
 const colorOf = cid => PAL[Object.keys(DATA.computers).indexOf(cid) % PAL.length];
 const mapUses = m => m.speakers.reduce((u, p) => { (u[p.computer] = u[p.computer] || []).push(p.ch); return u; }, {});
@@ -599,7 +641,8 @@ const db = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v) + ' dB';
 /* ---------- this computer ---------- */
 function renderLocal(){
   const el = document.getElementById('local');
-  const id = DATA.local; if (!id) { el.innerHTML = ''; return; }
+  const id = DATA.local;
+  if (!id) { el.innerHTML = (IS_MAC && !DATA.install.done) ? `<section class="me"><div><div class="row"><span class="lbl">This computer</span><h1>This Mac</h1><span class="state">No renderer installed</span></div></div><div class="me-actions"><button class="act open primary" data-inst-open>Install renderer</button></div></section>` : ''; return; }
   const c = DATA.computers[id], sp = DATA.spaces.find(s => s.id===c.space);
   const zones = Object.values(DATA.zones).filter(z => z.computers.includes(id) && z.rendering).map(z => z.name);
   const cls = c.status==='degraded' ? 'warn' : c.status==='offline' ? 'off' : '';
@@ -739,7 +782,7 @@ function computerDetail(id){
       <div class="fact"><span class="k">Uptime</span><span class="v">${esc(c.up)}</span></div>
       <div class="fact"><span class="k">Renderer</span><span class="v">${esc(c.version)}</span></div>
       <div class="fact"><span class="k">Model</span><span class="v">${esc(c.model)} · ${esc(c.os)}</span></div>
-      <div class="cactions"><button class="act" data-logs="${id}">Logs</button><button class="act" data-proc="${id}.renderer">Restart renderer</button></div>
+      <div class="cactions"><button class="act" data-logs="${id}">Logs</button><button class="act" data-proc="${id}.renderer">Restart renderer</button>${id===DATA.local && IS_MAC ? '<button class="act" data-inst-open>Run installer again</button>' : ''}</div>
     </div>
 
     <h3 class="sec-h">Identity</h3>
@@ -786,6 +829,114 @@ function computerDetail(id){
       <span class="k">Notes</span>
       <textarea class="notes-field" data-set="${id}.notes" data-kind="notes" placeholder="Notes for installers: rack position, cabling, quirks…">${esc(c.notes||'')}</textarea>
     </div>`;
+}
+
+/* ---------- installer (set up this Mac as a renderer) ---------- */
+const IS_MAC = /Mac/i.test(navigator.platform) || new URLSearchParams(location.search).has('mac');
+const INSTALL_STEPS = ['This computer','Install renderer','Processes','Audio','Wrap up'];
+const COMPONENTS = [['Renderer engine','184 MB'],['REST server','6 MB'],['SPLSensor (OSC)','4 MB'],['Launch daemon','runs at boot'],['Helper scripts','1 MB']];
+function installDraftFrom(c){
+  const copy = o => JSON.parse(JSON.stringify(o));
+  return c ? { name:c.name, iface:c.iface, ifaces:copy(c.ifaces), perms:{ energy:c.perms.energy, login:c.perms.login, lan:true }, multicast:c.multicast,
+      device:c.device, channels:c.channels, aes67:copy(c.aes67), input:copy(c.input), procs:copy(c.procs), space:c.space, newSpace:'' }
+  : { name:'', iface:'en0', ifaces:[{ id:'en0', label:'Wi-Fi', ip:'10.0.1.57' }, { id:'en1', label:'Ethernet', ip:'' }, { id:'en7', label:'USB 10GbE', ip:'10.0.1.58' }],
+      perms:{ energy:false, login:false, lan:false }, multicast:DATA.defaults.multicast,
+      device:'AES67 stream', channels:16, aes67:{ stream:'', outDev:'en7', ip:'239.69.1.50', igmp:false }, input:{ enabled:false, device:'AES67 stream', channels:8, ip:'' },
+      procs:{ renderer:{on:true}, rest:{on:true, port:DATA.defaults.rest}, osc:{on:true, port:DATA.defaults.osc} }, space:DATA.spaces[0].id, newSpace:'' };
+}
+function startInstall(){
+  const I = DATA.install, c = DATA.local ? DATA.computers[DATA.local] : null;
+  I.draft = installDraftFrom(c); I.installed = !!c; I.progress = null; I.checks = null; I.tone = false;
+  go('install', 1);
+}
+function runInstall(){
+  const I = DATA.install; I.installed = false; I.progress = { i:0, pct:0 }; render();
+  const tick = () => { const p = I.progress; if (!p) return;
+    p.pct += 9 + Math.random()*16;
+    if (p.pct >= 100) { p.i++; p.pct = 0; }
+    if (p.i >= COMPONENTS.length) { I.progress = null; I.installed = true; toast(`Renderer ${I.version} installed`); }
+    if (route().tab==='install') render();
+    if (I.progress) setTimeout(tick, 150); };
+  setTimeout(tick, 250);
+}
+function finishInstall(){
+  const I = DATA.install, d = I.draft;
+  let spId = d.space;
+  if (spId==='__new') { spId = 'sp' + Date.now(); DATA.spaces.push({ id:spId, name:d.newSpace.trim(), zones:[], computers:[] }); }
+  let id = DATA.local;
+  if (!id) { id = 'oc' + String(Object.keys(DATA.computers).length + 1).padStart(2,'0');
+    DATA.computers[id] = { status:'online', load:3, ptp:{ state:'locked', offset:'7 µs' }, up:'just now', uuid:(crypto.randomUUID ? crypto.randomUUID() : 'B7E1C2D3-0000-4000-8000-'+Date.now().toString(16)).toUpperCase(), model:'Mac mini M5', os:'macOS 27.0', log:'Info', notes:'' }; }
+  const c = DATA.computers[id];
+  if (c.space && c.space!==spId) { const old = DATA.spaces.find(x => x.id===c.space); if (old) old.computers = old.computers.filter(x => x!==id); }
+  const sp = DATA.spaces.find(x => x.id===spId); if (!sp.computers.includes(id)) sp.computers.push(id);
+  Object.assign(c, { name:d.name.trim(), space:spId, iface:d.iface, ifaces:d.ifaces, perms:{ energy:d.perms.energy, login:d.perms.login }, multicast:d.multicast,
+    device:d.device, channels:d.channels, aes67:d.aes67, input:d.input, procs:d.procs, version:I.version });
+  DATA.local = id; I.done = true; I.when = 'just now'; I.draft = null; UI.justInstalled = id;
+  renderLocal(); toast(`${c.name} is set up in ${sp.name}`); go('speakermaps');
+}
+function installPage(id){
+  if (!IS_MAC) return `<div class="page inst"><div class="inst-nomac"><h1 style="font-size:24px;font-weight:500;margin-bottom:10px">Install on the Mac itself</h1><p>Installation runs on the Mac that will become a renderer. Open SPLManager on that Mac and it starts here by itself.</p></div></div>`;
+  const I = DATA.install;
+  if (!I.draft) { const c = DATA.local ? DATA.computers[DATA.local] : null; I.draft = installDraftFrom(c); I.installed = !!c; }
+  const d = I.draft, step = Math.min(5, Math.max(1, +id || 1));
+  const row = (k, v, right='') => `<div class="srow"><span class="k">${k}</span><span class="v">${v}</span><span>${right}</span></div>`;
+  const opt = (v, label, cur) => `<option value="${esc(v)}" ${String(v)===String(cur)?'selected':''}>${esc(label)}</option>`;
+  const toggle = (path, on) => `<button class="toggle ${on?'on':''}" role="switch" aria-checked="${on}" data-itoggle="${path}"><i></i></button>`;
+  const ip = (d.ifaces.find(i => i.id===d.iface) || {}).ip || '—';
+  const out = DATA.devices[d.device].output, aes = out==='AES67', chans = aes ? d.channels : Math.min(d.channels, DATA.devices[d.device].outs);
+  const chanSel = path => `<select class="field num" data-iset="${path}" data-kind="int">${[8,16,24,32,40,48,56,64].map(n => opt(n, n, getPath(d, path))).join('')}</select>`;
+  const perm = (k, label, note) => row(label, d.perms[k] ? '<span class="mark"></span>Allowed' : `<span class="hint">${note}</span>`, d.perms[k] ? '' : `<button class="act" data-inst-perm="${k}">Allow…</button>`);
+  let title = '', lead = '', body = '', canNext = true, nextLabel = 'Continue';
+  if (step===1) { title = 'This computer'; lead = 'Give this Mac a name, pick the network it renders on, and grant the macOS permissions a renderer needs.';
+    body = `${row('Name', `<input class="field" value="${esc(d.name)}" data-iset="name" placeholder="M5-OC05" autocomplete="off">`)}
+      ${row('Network', `<select class="field" data-iset="iface">${d.ifaces.map(i => opt(i.id, `${i.label} (${i.id})${i.ip ? ' · ' + i.ip : ' · no address'}`, d.iface)).join('')}</select>`)}
+      ${row('IP address', `<span class="mono">${ip}</span>`)}
+      <h3 class="sec-h">macOS permissions</h3>
+      ${perm('energy', 'Energy', 'Prevent sleep, start up again after a power failure')}
+      ${perm('login', 'Start at login', 'Launch the renderer when this Mac starts')}
+      ${perm('lan', 'Local network', 'Find and talk to other renderers and controllers')}`;
+    canNext = !!d.name.trim(); }
+  if (step===2) { title = 'Install renderer'; const p = I.progress;
+    lead = I.installed ? `Renderer ${I.version} is already on this Mac. Reinstall to repair it, or continue.` : 'Downloads the renderer and its background components from the cloud and installs them on this Mac.';
+    body = COMPONENTS.map(([n, sz], i) => { const st = p ? (i < p.i ? 'done' : i===p.i ? 'busy' : 'wait') : (I.installed ? 'done' : 'wait');
+      return row(n, st==='done' ? `<span class="mark"></span>Installed${i===0 ? ' · ' + I.version : ''}` : st==='busy' ? `<span class="bar"><i style="width:${Math.min(100, p.pct)}%"></i></span><span class="hint">Installing…</span>` : `<span class="hint">${sz}</span>`); }).join('');
+    body += `<div class="inst-act">${p ? '<span class="pulse"></span><span class="hint">Downloading from the cloud…</span>' : `<button class="act ${I.installed ? '' : 'primary'}" data-inst-run>${I.installed ? 'Reinstall' : 'Install'}</button>`}</div>`;
+    canNext = I.installed && !p; }
+  if (step===3) { title = 'Background processes'; lead = 'These run whenever the Mac is up. This app and your controllers talk to the renderer through them.';
+    const chk = k => I.checks ? (I.checks[k] ? '<span class="mark"></span>Responding' : '<span class="hint">Off</span>') : '';
+    body = `${row('Renderer engine', `${toggle('procs.renderer.on', d.procs.renderer.on)}<span class="hint">Plays scenes. Required.</span>`, chk('renderer'))}
+      ${row('REST server', `${toggle('procs.rest.on', d.procs.rest.on)}<span class="hint">Port</span><input class="field num mono" value="${d.procs.rest.port}" data-iset="procs.rest.port" data-kind="int" inputmode="numeric" ${d.procs.rest.on ? '' : 'disabled'}>`, chk('rest'))}
+      ${row('SPLSensor (OSC)', `${toggle('procs.osc.on', d.procs.osc.on)}<span class="hint">Port</span><input class="field num mono" value="${d.procs.osc.port}" data-iset="procs.osc.port" data-kind="int" inputmode="numeric" ${d.procs.osc.on ? '' : 'disabled'}>`, chk('osc'))}
+      <div class="inst-act"><button class="act" data-inst-check>Check</button>${I.checks ? '<span class="hint">Checked just now</span>' : ''}</div>`; }
+  if (step===4) { title = 'Audio'; lead = 'Choose the device this Mac plays through and how many channels it exposes. Speaker maps place those channels later.';
+    body = `${row('Device', `<select class="field" data-iset="device">${Object.keys(DATA.devices).map(x => opt(x, x, d.device)).join('')}</select><span class="hint">${esc(out)}</span>`)}
+      ${row('Output channels', aes ? chanSel('channels') : `<span>${chans}</span><span class="hint">fixed by ${esc(d.device)}</span>`)}
+      ${aes ? row('Stream name', `<input class="field" value="${esc(d.aes67.stream)}" data-iset="aes67.stream" placeholder="${esc((d.name || 'renderer').toLowerCase())}-out">`) : ''}
+      ${aes ? row('Output device', `<select class="field" data-iset="aes67.outDev">${d.ifaces.map(i => opt(i.id, `${i.label} (${i.id})`, d.aes67.outDev)).join('')}</select>`) : ''}
+      ${aes ? row('Stream IP', `<input class="field short mono" value="${d.aes67.ip}" data-iset="aes67.ip" inputmode="numeric">`) : ''}
+      ${row('Input streaming', `${toggle('input.enabled', d.input.enabled)}<span class="hint">${d.input.enabled ? 'Receives a live stream for rendering' : 'Off'}</span>`)}
+      ${d.input.enabled ? row('Input channels', chanSel('input.channels')) : ''}
+      <div class="inst-act">${I.tone ? `<span class="pulse"></span><span class="hint">Playing a tone on channels 1–${chans}</span><button class="act" data-inst-tone>Stop</button>` : '<button class="act" data-inst-tone>Play test tone</button>'}</div>`; }
+  if (step===5) { title = 'Wrap up'; lead = 'Attach this Mac to a Space so zones there can use it. Speaker maps come next, in the main app.';
+    const procs = ['renderer','rest','osc'].filter(k => d.procs[k].on).map(k => ({ renderer:'Renderer', rest:'REST :' + d.procs.rest.port, osc:'SPLSensor :' + d.procs.osc.port })[k]).join(' · ');
+    const missing = ['energy','login','lan'].filter(k => !d.perms[k]).length;
+    body = `${row('Space', `<select class="field" data-iset="space">${DATA.spaces.map(x => opt(x.id, x.name, d.space)).join('')}${opt('__new', 'New Space…', d.space)}</select>`)}
+      ${d.space==='__new' ? row('Space name', `<input class="field" value="${esc(d.newSpace)}" data-iset="newSpace" placeholder="Rooftop" autocomplete="off">`) : ''}
+      ${row('Multicast group', `<input class="field short mono" value="${d.multicast}" data-iset="multicast" inputmode="numeric">`)}
+      <h3 class="sec-h">Summary</h3>
+      ${row('Computer', `${esc(d.name)}<span class="hint">${ip}</span>`)}
+      ${row('Renderer', `${I.version}<span class="hint">${procs || 'no processes enabled'}</span>`)}
+      ${row('Audio', `${esc(d.device)}<span class="hint">${chans} channels</span>`)}
+      ${row('Permissions', missing ? `<span class="hint">${missing} not granted</span>` : 'All granted', missing ? '<button class="go" data-inst-go="1">Go back</button>' : '')}`;
+    nextLabel = 'Finish'; canNext = d.space!=='__new' || !!d.newSpace.trim(); }
+  const steps = INSTALL_STEPS.map((lbl, i) => { const n = i + 1, cls = n < step ? 'done' : n===step ? 'on' : '';
+    return `<button class="istep ${cls}" data-inst-go="${n}" ${n > step && !I.installed ? 'disabled' : ''}><span class="num">${n < step ? '✓' : n}</span><span>${lbl}</span></button>`; }).join('');
+  return `<div class="page inst">
+    <div class="inst-h"><div><span class="hint">${I.done ? 'Run the installer again' : 'Set up this Mac as a renderer'}</span><h1>${title}</h1></div><div class="isteps">${steps}</div></div>
+    <p class="inst-lead">${lead}</p>
+    ${body}
+    <div class="inst-foot"><button class="go" data-inst-skip>${I.done ? 'Cancel' : 'Skip for now'}</button><span class="cactions">${step > 1 ? `<button class="act" data-inst-go="${step-1}">Back</button>` : ''}<button class="act primary" data-inst-next ${canNext ? '' : 'disabled'}>${nextLabel}</button></span></div>
+  </div>`;
 }
 
 /* ---------- network ---------- */
@@ -869,7 +1020,8 @@ function speakermapsPage(id){
   const loose = ids.filter(mid => !zoneFor(mid)); if (loose.length) groups.push(['Not assigned', loose]);
   const list = groups.filter(([,g]) => g.length).map(([name, g]) => `<h3>${esc(name)}</h3>` + g.map(mid => { const m = DATA.speakermaps[mid], ze = zoneFor(mid);
     return `<button class="zrow nomark ${mid===sel?'sel':''}" data-select-map="${mid}"><span class="name">${esc(m.name)}</span><span class="sub">${m.speakers.length} speakers${ze ? ' · ' + esc(ze[1].name) : ''}</span></button>`; }).join('')).join('');
-  return `<div class="page zones maps ${DATA.speakermaps[id]?'picked':''}"><aside class="zlist">${list}<button class="go" style="margin:18px 0 0 14px" data-map-new>Upload a speaker map…</button><input type="file" id="mapfile-new" accept=".json,.xml,.csv,.txt,.spk" hidden></aside><section class="zdetail"><button class="back-mobile" data-go="speakermaps">← All speaker maps</button>${sel ? mapDetail(sel) : '<p class="hint">No speaker maps yet.</p>'}</section></div>`;
+  const banner = UI.justInstalled && DATA.computers[UI.justInstalled] ? `<div class="inst-banner"><span class="mark"></span><span><b>${esc(DATA.computers[UI.justInstalled].name)}</b> is set up. Give it a speaker map: upload one, or add its channels to a map below.</span><button class="go" data-inst-dismiss>Dismiss</button></div>` : '';
+  return `<div class="page zones maps ${DATA.speakermaps[id]?'picked':''}">${banner}<aside class="zlist">${list}<button class="go" style="margin:18px 0 0 14px" data-map-new>Upload a speaker map…</button><input type="file" id="mapfile-new" accept=".json,.xml,.csv,.txt,.spk" hidden></aside><section class="zdetail"><button class="back-mobile" data-go="speakermaps">← All speaker maps</button>${sel ? mapDetail(sel) : '<p class="hint">No speaker maps yet.</p>'}</section></div>`;
 }
 function mapDetail(mid){
   const m = DATA.speakermaps[mid], ze = Object.entries(DATA.zones).find(([,z]) => z.map===mid);
@@ -926,25 +1078,25 @@ function mapSVG(m){
   const W = ext*2, H = W*10/16;
   const grid = [];
   if (UI.view==='top') {
-    for (let g = -Math.floor(ext); g <= ext; g++) grid.push(`<line x1="${g}" y1="${-H/2}" x2="${g}" y2="${H/2}" stroke="${g===0?'rgba(164,184,171,.25)':'rgba(164,184,171,.07)'}" stroke-width="0.02"/><line x1="${-ext}" y1="${g}" x2="${ext}" y2="${g}" stroke="${g===0?'rgba(164,184,171,.25)':'rgba(164,184,171,.07)'}" stroke-width="0.02"/>`);
+    for (let g = -Math.floor(ext); g <= ext; g++) grid.push(`<line x1="${g}" y1="${-H/2}" x2="${g}" y2="${H/2}" stroke="${g===0?mist(.25):mist(.07)}" stroke-width="0.02"/><line x1="${-ext}" y1="${g}" x2="${ext}" y2="${g}" stroke="${g===0?mist(.25):mist(.07)}" stroke-width="0.02"/>`);
     const plan = m.plan.src ? (() => { const IW = 2000, ratio = m.plan.ratio || 1, IH = IW/ratio, w = m.plan.width, h = w/ratio;
       return `<g transform="translate(${-w/2},${-h/2}) scale(${w/IW})"><image href="${m.plan.src}" width="${IW}" height="${IH}" preserveAspectRatio="none" opacity="${m.plan.opacity}"/></g>`; })() : '';
     const dots = pts.map(p => `<g class="spk ${UI.spk===p.id?'sel':''}" data-spk-id="${p.id}" transform="translate(${p.x},${-p.y})"><title>${esc(p.label)} · ${esc(DATA.computers[p.computer].name)} ch ${p.ch} · z ${p.z} m</title><circle r="0.3" fill="${colorOf(p.computer)}"/><text y="0.11" text-anchor="middle" font-size="0.3">${p.ch}</text></g>`).join('');
-    return `<svg viewBox="${-ext} ${-H/2} ${W} ${H}" data-top>${plan}${grid.join('')}<text x="${-ext+0.3}" y="${-H/2+0.5}" font-size="0.32" fill="rgba(164,184,171,.5)">1 m grid · ${pts.length} speakers</text>${dots}</svg>`;
+    return `<svg viewBox="${-ext} ${-H/2} ${W} ${H}" data-top>${plan}${grid.join('')}<text x="${-ext+0.3}" y="${-H/2+0.5}" font-size="0.32" fill="${mist(.5)}">1 m grid · ${pts.length} speakers</text>${dots}</svg>`;
   }
   // 3D: isometric projection of floor grid and speakers with a drop line to the floor
   const iso = (x, y, z) => [ (x - y) * 0.866, (x + y) * 0.5 - z ];
   const zmax = Math.max(3, ...pts.map(p => p.z));
   for (let g = -Math.floor(ext); g <= ext; g++) {
     const a = iso(g, -ext, 0), b = iso(g, ext, 0), c = iso(-ext, g, 0), d = iso(ext, g, 0);
-    const col = g===0 ? 'rgba(164,184,171,.25)' : 'rgba(164,184,171,.07)';
+    const col = g===0 ? mist(.25) : mist(.07);
     grid.push(`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="${col}" stroke-width="0.02"/><line x1="${c[0]}" y1="${c[1]}" x2="${d[0]}" y2="${d[1]}" stroke="${col}" stroke-width="0.02"/>`);
   }
   const sorted = pts.slice().sort((a,b) => (a.x + a.y) - (b.x + b.y));
   const dots = sorted.map(p => { const [sx, sy] = iso(p.x, p.y, p.z), [fx, fy] = iso(p.x, p.y, 0);
     return `<g class="spk ${UI.spk===p.id?'sel':''}" data-spk-id="${p.id}"><title>${esc(p.label)} · z ${p.z} m</title><line x1="${fx}" y1="${fy}" x2="${sx}" y2="${sy}" stroke="${colorOf(p.computer)}" stroke-opacity=".35" stroke-width="0.03"/><circle cx="${fx}" cy="${fy}" r="0.08" fill="${colorOf(p.computer)}" opacity=".5"/><circle cx="${sx}" cy="${sy}" r="0.3" fill="${colorOf(p.computer)}"/><text x="${sx}" y="${sy+0.11}" text-anchor="middle" font-size="0.3">${p.ch}</text></g>`; }).join('');
   const vw = ext*2*0.866*2, vh = ext*2 + zmax + 1;
-  return `<svg viewBox="${-vw/2} ${-ext - zmax - 0.5} ${vw} ${vh}">${grid.join('')}<text x="${-vw/2+0.3}" y="${-ext - zmax}" font-size="0.32" fill="rgba(164,184,171,.5)">isometric · height shown as drop lines</text>${dots}</svg>`;
+  return `<svg viewBox="${-vw/2} ${-ext - zmax - 0.5} ${vw} ${vh}">${grid.join('')}<text x="${-vw/2+0.3}" y="${-ext - zmax}" font-size="0.32" fill="${mist(.5)}">isometric · height shown as drop lines</text>${dots}</svg>`;
 }
 function bindCanvas(){
   const svg = document.querySelector('#canvas svg[data-top]'); if (!svg) return;
@@ -1021,7 +1173,7 @@ function settingsPage(){
   const logs = UI.logs.filter(l => (UI.logFilter.computer==='all' || l.c===UI.logFilter.computer) && (UI.logFilter.level==='all' || l.l===UI.logFilter.level));
   return `<div class="page net">
     <h3 class="sec-h">Appearance and preferences</h3>
-    ${row('Theme', seg('theme', st.theme, [['dark','Dark'],['light','Light'],['auto','Auto']]))}
+    ${row('Theme', seg('theme', st.theme, THEMES))}
     ${row('Units', seg('units', st.units, [['m','Meters'],['ft','Feet']]))}
     ${row('Time', seg('clock', st.clock, [['12','12-hour'],['24','24-hour']]))}
     ${row('Opens on', `<select class="field mid" data-sset="firstTab">${TABS.map(([id,l]) => opt(id, l, st.firstTab)).join('')}</select>`)}
@@ -1032,6 +1184,9 @@ function settingsPage(){
     ${row('High load', `${toggle('alerts.load', st.alerts.load)}<span class="hint">over</span><input class="field num mono" value="${st.alerts.loadPct}" data-sset="alerts.loadPct" data-kind="int" inputmode="numeric" ${st.alerts.load?'':'disabled'}><span class="hint">%</span>`)}
     ${row('Cloud unreachable', toggle('alerts.cloud', st.alerts.cloud))}
     ${row('Send to', `<input class="field" style="min-width:320px" value="${esc(st.alerts.emails)}" data-sset="alerts.emails" placeholder="name@company.com, …">`)}
+
+    ${IS_MAC ? `<h3 class="sec-h">This Mac</h3>
+    ${row('Renderer', DATA.install.done && DATA.local ? `${esc(DATA.computers[DATA.local].name)}<span class="hint">Renderer ${DATA.install.version} · installed ${esc(DATA.install.when)}</span>` : '<span class="hint">No renderer installed on this Mac</span>', `<button class="act" data-inst-open>${DATA.install.done ? 'Run installer again' : 'Install renderer'}</button>`)}` : ''}
 
     <h3 class="sec-h"><span>Updates</span><button class="go" data-check-updates>Check for updates</button></h3>
     ${row('Latest renderer', `${esc(st.updates.latest)}<span class="hint">${behind.length ? `${behind.length} computer${behind.length===1?'':'s'} behind` : 'All computers are current'}</span>`, behind.length ? `<button class="act" data-update-all>Update all</button>` : '')}
@@ -1166,7 +1321,8 @@ function render(){
   const r = route();
   const main = document.getElementById('main');
   const key = r.tab + '/' + (r.id || ''), same = key === UI.lastKey, keep = main.scrollTop;
-  main.innerHTML = r.tab==='dashboard' ? dashboard() : r.tab==='zones' ? zonesPage(r.id) : r.tab==='computers' ? computersPage(r.id) : r.tab==='network' ? networkPage() : r.tab==='speakermaps' ? speakermapsPage(r.id) : r.tab==='account' ? accountPage() : r.tab==='preferences' ? settingsPage() : stub(r.tab, r.id);
+  document.getElementById('local').style.display = r.tab==='install' ? 'none' : '';
+  main.innerHTML = r.tab==='install' ? installPage(r.id) : r.tab==='dashboard' ? dashboard() : r.tab==='zones' ? zonesPage(r.id) : r.tab==='computers' ? computersPage(r.id) : r.tab==='network' ? networkPage() : r.tab==='speakermaps' ? speakermapsPage(r.id) : r.tab==='account' ? accountPage() : r.tab==='preferences' ? settingsPage() : stub(r.tab, r.id);
   main.scrollTop = same ? keep : 0; UI.lastKey = key;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===r.tab));
   renderSheet(); bindCanvas(); liveLogs(r.tab==='preferences');
@@ -1184,10 +1340,20 @@ document.getElementById('tabs').innerHTML = TABS.map(([id,label,icon]) =>
   `<button class="tab" data-tab="${id}"><svg viewBox="0 0 24 24">${icon}</svg>${label}</button>`).join('');
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-tab],[data-zone],[data-computer],[data-go],[data-action],[data-select],[data-play],[data-pick],[data-choose],[data-filter],[data-edit-computers],[data-toggle-computer],[data-sheet-tab],[data-toggle-scene],[data-load],[data-change-map],[data-upload-map],[data-choose-map],[data-select-computer],[data-toggle],[data-ztoggle],[data-proc],[data-copy],[data-logs],[data-root-toggle],[data-disc-add],[data-add-ip],[data-addip-go],[data-apply-defaults],[data-sync],[data-int-test],[data-add-int],[data-addint-go],[data-int-edit],[data-int-zone],[data-int-feedback],[data-int-remove],[data-run-test],[data-select-map],[data-seg],[data-stoggle],[data-check-updates],[data-update-all],[data-update],[data-export],[data-import],[data-restore],[data-restore-go],[data-reach],[data-walk],[data-diag],[data-diag-download],[data-log-clear],[data-send],[data-tone],[data-change-pw],[data-signout],[data-local-pw],[data-cloud-manage],[data-site-add],[data-site-switch],[data-renew],[data-invite],[data-invite-go],[data-pw-go],[data-user-remove],[data-view],[data-spk-row],[data-spk-add],[data-spk-remove],[data-map-new],[data-map-replace],[data-map-download],[data-map-delete],[data-delmap-go],[data-plan-add],[data-plan-remove],[data-res-add],[data-confirm-map],[data-cancel],[data-close]');
+  const t = e.target.closest('[data-tab],[data-zone],[data-computer],[data-go],[data-action],[data-select],[data-play],[data-pick],[data-choose],[data-filter],[data-edit-computers],[data-toggle-computer],[data-sheet-tab],[data-toggle-scene],[data-load],[data-change-map],[data-upload-map],[data-choose-map],[data-select-computer],[data-toggle],[data-ztoggle],[data-proc],[data-copy],[data-logs],[data-root-toggle],[data-disc-add],[data-add-ip],[data-addip-go],[data-apply-defaults],[data-sync],[data-int-test],[data-add-int],[data-addint-go],[data-int-edit],[data-int-zone],[data-int-feedback],[data-int-remove],[data-run-test],[data-select-map],[data-seg],[data-stoggle],[data-check-updates],[data-update-all],[data-update],[data-export],[data-import],[data-restore],[data-restore-go],[data-reach],[data-walk],[data-diag],[data-diag-download],[data-log-clear],[data-send],[data-tone],[data-change-pw],[data-signout],[data-local-pw],[data-cloud-manage],[data-site-add],[data-site-switch],[data-renew],[data-invite],[data-invite-go],[data-pw-go],[data-user-remove],[data-view],[data-spk-row],[data-spk-add],[data-spk-remove],[data-map-new],[data-map-replace],[data-map-download],[data-map-delete],[data-delmap-go],[data-plan-add],[data-plan-remove],[data-res-add],[data-confirm-map],[data-inst-open],[data-inst-go],[data-inst-next],[data-inst-skip],[data-inst-run],[data-inst-check],[data-inst-tone],[data-inst-perm],[data-inst-dismiss],[data-itoggle],[data-cancel],[data-close]');
   if (!t) return;
   const d = t.dataset;
   if (d.tab)       return go(d.tab);
+  if (t.hasAttribute('data-inst-open')) return startInstall();
+  if (d.instGo)    return go('install', d.instGo);
+  if (t.hasAttribute('data-inst-next')) { const s = +(route().id || 1); return s < 5 ? go('install', s + 1) : finishInstall(); }
+  if (t.hasAttribute('data-inst-skip')) { const I = DATA.install; I.draft = null; I.progress = null; toast(I.done ? 'Nothing changed' : 'You can install later from Settings'); return DATA.local ? go('computers', DATA.local) : go('dashboard'); }
+  if (t.hasAttribute('data-inst-run')) return runInstall();
+  if (t.hasAttribute('data-inst-check')) { const p = DATA.install.draft.procs; DATA.install.checks = { renderer:p.renderer.on, rest:p.rest.on, osc:p.osc.on }; return render(); }
+  if (t.hasAttribute('data-inst-tone')) { DATA.install.tone = !DATA.install.tone; return render(); }
+  if (t.hasAttribute('data-inst-dismiss')) { UI.justInstalled = null; return render(); }
+  if (d.instPerm)  { DATA.install.draft.perms[d.instPerm] = true; toast('macOS asked for permission. Granted.'); return render(); }
+  if (d.itoggle)   { setPath(DATA.install.draft, d.itoggle, !getPath(DATA.install.draft, d.itoggle)); DATA.install.checks = null; return render(); }
   if (d.zone)      return go('zones', d.zone);
   if (d.computer)  return go('computers', d.computer);
   if (d.select)    return go('zones', d.select);
@@ -1365,6 +1531,8 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const t = e.target;
   if (t.dataset.planOpacity) { const m = DATA.speakermaps[t.dataset.planOpacity]; m.plan.opacity = +t.value/100; t.style.setProperty('--p', t.value + '%'); const im = document.querySelector('#canvas image'); if (im) im.setAttribute('opacity', m.plan.opacity); return; }
+  if (t.dataset.iset && t.tagName !== 'SELECT') { const d = DATA.install.draft, v = t.value; setPath(d, t.dataset.iset, t.dataset.kind==='int' ? (+v || 0) : v);
+    if (t.dataset.iset==='name' || t.dataset.iset==='newSpace') { const b = document.querySelector('[data-inst-next]'); if (b) b.disabled = !v.trim(); } return; }
   if (t.dataset.vol) { const z = DATA.zones[t.dataset.vol]; z.volume = +t.value; if (z.rendering) z.level = z.volume/100*.85; t.style.setProperty('--p', z.volume + '%'); document.getElementById('vol-v').textContent = z.volume; }
 });
 document.addEventListener('change', e => {
@@ -1375,6 +1543,7 @@ document.addEventListener('change', e => {
     toast(`Uploaded ${name}`);
     UI.sheet = { type:'confirmMap', zone:UI.sheet.zone, map:id }; return renderSheet();
   }
+  if (d.iset && t.tagName === 'SELECT') { setPath(DATA.install.draft, d.iset, d.kind==='int' ? +t.value : t.value); return render(); }
   if (d.ui)    { UI[d.ui] = t.value; return; }
   if (t.hasAttribute('data-ui-walkzone')) { UI.walkZone = t.value; return; }
   if (d.uiCon) { UI.con[d.uiCon] = t.value; return; }
@@ -1426,9 +1595,12 @@ function tick(){ const d=new Date();
     '<span class="date">' + esc(d.toLocaleDateString([], {weekday:'short', month:'short', day:'numeric'})) + ' · </span>' +
     esc(d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit', hour12: DATA.settings.clock==='12'})); }
 tick(); setInterval(tick, 1000);
-try { const t = localStorage.getItem('spl-theme'); if (t) DATA.settings.theme = t; } catch(_){}
+try { const t = localStorage.getItem('spl-theme'); if (t && THEMES.some(([id]) => id===t)) DATA.settings.theme = t; } catch(_){}
 applyTheme();
-if (new URLSearchParams(location.search).has('remote')) DATA.local = null;
+const Q = new URLSearchParams(location.search);
+if (Q.has('remote')) DATA.local = null;
+if (Q.has('install')) { DATA.local = null; DATA.install.done = false; DATA.install.installed = false; }   // demo: a Mac with no renderer yet
+if (IS_MAC && !DATA.install.done && !location.hash) location.hash = 'install';   // install mode opens by itself
 renderLocal();
 render();
 </script>
