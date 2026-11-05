@@ -493,7 +493,7 @@ const TABS = [
   ['network','Network','<circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v5M12 12l-5.5 5.5M12 12l5.5 5.5"/>'],
   ['speakermaps','Speakermaps','<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="14" r="3.2"/><circle cx="12" cy="7.5" r="1.1"/>'],
   ['account','Account','<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'],
-  ['settings','Settings','<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--void)"/><circle cx="15" cy="12" r="2.2" fill="var(--void)"/><circle cx="8" cy="17" r="2.2" fill="var(--void)"/>'],
+  ['preferences','Settings','<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2.2" fill="var(--void)"/><circle cx="15" cy="12" r="2.2" fill="var(--void)"/><circle cx="8" cy="17" r="2.2" fill="var(--void)"/>'],
 ];
 const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg>';
 const ICON_STOP = '<svg viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></svg>';
@@ -509,8 +509,8 @@ const fromUnit = v => DATA.settings.units==='ft' ? +(v/3.28084).toFixed(1) : +(+
 const unitLabel = () => DATA.settings.units==='ft' ? 'ft' : 'm';
 
 /* ---------- tiny router: #tab or #tab/id ---------- */
-function route(){ const [tab,id] = location.hash.replace('#','').split('/'); return { tab: tab||DATA.settings.firstTab||'dashboard', id }; }
-function go(tab,id){ location.hash = id ? `${tab}/${id}` : tab; }
+function route(){ const [tab,id] = location.hash.replace('#','').split('-'); return { tab: tab||DATA.settings.firstTab||'dashboard', id }; }
+function go(tab,id){ location.hash = id ? `${tab}-${id}` : tab; }
 addEventListener('hashchange', render);
 
 /* ---------- helpers ---------- */
@@ -632,7 +632,7 @@ function zoneDetail(zid){
             + (z.boot.mode==='scene' ? `<select class="field mid" data-zset="${zid}.boot.scene">${opt('', 'Choose a scene…', z.boot.scene||'')}${DATA.library.map(i => opt(i.id, i.title, z.boot.scene)).join('')}</select>` : '')
             + (z.boot.mode==='list'  ? `<select class="field mid" data-zset="${zid}.boot.list">${opt('', 'Choose a list…', z.boot.list||'')}${Object.entries(DATA.lists).map(([k,v]) => opt(k, v, z.boot.list)).join('')}</select>` : '')
           : '<span class="hint">Stays idle after a restart</span>'}</span><span></span></div>
-      <div class="srow"><span class="k">Speaker map</span><span class="v"><button class="name-link" data-go="speakermaps/${z.map}">${esc(DATA.speakermaps[z.map].name)}</button></span><button class="go" data-change-map="${zid}">Change</button></div>
+      <div class="srow"><span class="k">Speaker map</span><span class="v"><button class="name-link" data-go="speakermaps-${z.map}">${esc(DATA.speakermaps[z.map].name)}</button></span><button class="go" data-change-map="${zid}">Change</button></div>
     </div>
 
     <div class="notes">
@@ -1010,7 +1010,7 @@ function liveLogs(on){
   if (!on) return;
   logTimer = setInterval(() => { const [c,l,m] = LOG_POOL[Math.floor(Math.random()*LOG_POOL.length)];
     UI.logs.unshift({ t:new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit', second:'2-digit'}), c, l, m }); UI.logs = UI.logs.slice(0, 60);
-    if (route().tab==='settings' && !UI.sheet && document.activeElement?.id !== 'con-cmd') { const ul = document.querySelector('.log'); if (ul) { const keep = document.getElementById('main').scrollTop; render(); document.getElementById('main').scrollTop = keep; } } }, 4000);
+    if (route().tab==='preferences' && !UI.sheet && document.activeElement?.id !== 'con-cmd') { const ul = document.querySelector('.log'); if (ul) { const keep = document.getElementById('main').scrollTop; render(); document.getElementById('main').scrollTop = keep; } } }, 4000);
 }
 
 /* ---------- sheets ---------- */
@@ -1100,10 +1100,10 @@ function render(){
   const r = route();
   const main = document.getElementById('main');
   const key = r.tab + '/' + (r.id || ''), same = key === UI.lastKey, keep = main.scrollTop;
-  main.innerHTML = r.tab==='dashboard' ? dashboard() : r.tab==='zones' ? zonesPage(r.id) : r.tab==='computers' ? computersPage(r.id) : r.tab==='network' ? networkPage() : r.tab==='speakermaps' ? speakermapsPage(r.id) : r.tab==='account' ? accountPage() : r.tab==='settings' ? settingsPage() : stub(r.tab, r.id);
+  main.innerHTML = r.tab==='dashboard' ? dashboard() : r.tab==='zones' ? zonesPage(r.id) : r.tab==='computers' ? computersPage(r.id) : r.tab==='network' ? networkPage() : r.tab==='speakermaps' ? speakermapsPage(r.id) : r.tab==='account' ? accountPage() : r.tab==='preferences' ? settingsPage() : stub(r.tab, r.id);
   main.scrollTop = same ? keep : 0; UI.lastKey = key;
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===r.tab));
-  renderSheet(); bindCanvas(); liveLogs(r.tab==='settings');
+  renderSheet(); bindCanvas(); liveLogs(r.tab==='preferences');
 }
 function readIntForm(){
   const dr = UI.sheet.draft, g = id => document.getElementById(id);
@@ -1206,7 +1206,7 @@ document.addEventListener('click', e => {
     else { const n = DATA.speakermaps[DATA.zones[UI.walk.zone].map].speakers.length; UI.walk.i = (UI.walk.i + (d.walk==='next' ? 1 : n - 1)) % n; }
     return render();
   }
-  if (t.hasAttribute('data-diag')) { UI.diag = 'collecting'; render(); setTimeout(() => { UI.diag = 'ready'; if (route().tab==='settings') render(); }, 2200); return; }
+  if (t.hasAttribute('data-diag')) { UI.diag = 'collecting'; render(); setTimeout(() => { UI.diag = 'ready'; if (route().tab==='preferences') render(); }, 2200); return; }
   if (t.hasAttribute('data-diag-download')) { UI.diag = null; toast('diagnostics-orange-county.zip will download'); return render(); }
   if (t.hasAttribute('data-log-clear')) { UI.logs = []; return render(); }
   if (t.hasAttribute('data-send')) { UI.con.cmd = document.getElementById('con-cmd').value.trim(); if (!UI.con.cmd) return toast('Type a command'); UI.con.reply = fakeReply(UI.con.proto, UI.con.target, UI.con.cmd); return render(); }
@@ -1249,7 +1249,7 @@ document.addEventListener('click', e => {
   if (t.hasAttribute('data-res-add'))     return document.getElementById('resfile').click();
   if (d.copy)      { try { navigator.clipboard.writeText(d.copy); } catch(_){} return toast('Copied'); }
   if (d.logs)      return toast(`Logs for ${DATA.computers[d.logs].name} will open here`);
-  if (d.go)        { const [tab,id] = d.go.split('/'); return go(tab, id); }
+  if (d.go)        { const [tab,id] = d.go.split('-'); return go(tab, id); }
   if (d.action) {
     const me = DATA.computers[DATA.local].name;
     if (d.action==='restart') toast(`Restart requested for ${me}`);
